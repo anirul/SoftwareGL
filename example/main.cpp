@@ -1,27 +1,35 @@
 #include <iostream>
+#include <vector>
+
+#if defined(_WIN32) || defined(_WIN64)
+	#define WINDOWS_LEAN_AND_MEAN
+	#include <windows.h>
+#endif
 
 #include <GL/glew.h>
 #include <SDL.h>
 
-#ifdef _MSC_VER
+#if defined(_WIN32) || defined(_WIN64)
 	#pragma comment(lib, "opengl32.lib")
 	#pragma comment(lib, "glu32.lib")
+	#pragma comment(lib, "SDL2.lib")
+	#pragma comment(lib, "glew32.lib")
 #endif
 
-int main(int ac, char** av) 
+#include "WindowSDL2GL.h"
+#include "WindowSoftwareGL.h"
+
+#if defined(_WIN32) || defined(_WIN64)
+int WINAPI WinMain(
+	HINSTANCE hInstance,
+	HINSTANCE hPrevInstance,
+	LPSTR lpCmdLine,
+	int nShowCmd)
+#else
+int main(int ac, char** av)
+#endif
 {
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) 
-	{
-		std::cout << "SDL_Init Error: " << SDL_GetError() << std::endl;
-		return 1;
-	}
-	auto main_window = SDL_CreateWindow(
-		"Main Window",
-		SDL_WINDOWPOS_CENTERED,
-		SDL_WINDOWPOS_CENTERED,
-		1280,
-		720,
-		SDL_WINDOW_OPENGL);
-	SDL_Quit();
+	WindowSDL2GL window(std::make_shared<WindowSoftwareGL>());
+	window.Startup();
 	return 0;
 }

@@ -1,22 +1,22 @@
 #include <string>
 #include <vector>
 
-struct pixel {
+struct Pixel {
 	unsigned char r, g, b, a;
 };
 
 // technically you don't need y.
-struct image_data {
+struct ImageData {
 	size_t x;
 	size_t y;
-	std::vector<pixel> img;
+	std::vector<Pixel> img;
 };
 
-struct image_interface {
-	virtual bool save(
-		const image_data& data,
+struct ImageIOInterface {
+	virtual bool Save(
+		const ImageData& data,
 		const std::string& path) = 0;
-	virtual bool load(
-		image_data& data,
+	virtual bool Load(
+		ImageData& data,
 		const std::string& path) = 0;
 };
