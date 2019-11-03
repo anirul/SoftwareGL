@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <utility>
-
 #include <SDL.h>
 
 #include "WindowInterface.h"

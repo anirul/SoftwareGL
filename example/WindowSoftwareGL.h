@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ImageInterface.h"
+#include "../software_gl/ImageInterface.h"
 
 class WindowSoftwareGL : public WindowInterface
 {
@@ -16,11 +16,6 @@ public:
 
 	bool RunCompute() override
 	{
-		static unsigned char i = 0;
-		std::fill(
-			current_image_.begin(), 
-			current_image_.end(), 
-			Pixel{ 40, i++, 40, 255 });
 		// Copy the current image into the texture.
 		glBindTexture(GL_TEXTURE_2D, texture_id_);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -31,7 +26,7 @@ public:
 			screen_width_,
 			screen_height_,
 			0,
-			GL_BGRA,
+			GL_RGBA,
 			GL_UNSIGNED_BYTE,
 			&current_image_[0]);
 		// Copy it to the 1 quad on the screen.
@@ -42,13 +37,13 @@ public:
 			glPushMatrix();
 			glBegin(GL_QUADS);
 			{
-				glTexCoord2f(0, 1);
-				glVertex2f(-1, 1);
-				glTexCoord2f(1, 1);
-				glVertex2f(1, 1);
-				glTexCoord2f(1, 0);
-				glVertex2f(1, -1);
 				glTexCoord2f(0, 0);
+				glVertex2f(-1, 1);
+				glTexCoord2f(1, 0);
+				glVertex2f(1, 1);
+				glTexCoord2f(1, 1);
+				glVertex2f(1, -1);
+				glTexCoord2f(0, 1);
 				glVertex2f(-1, -1);
 			}
 			glEnd();
@@ -57,10 +52,9 @@ public:
 		glDisable(GL_TEXTURE_2D);
 		glFlush();
 		return true;
-		
 	}
 
-	bool RunEvent(const SDL_Event& event) 
+	bool RunEvent(const SDL_Event& event) override
 	{
 		if (event.type == SDL_QUIT)
 		{
