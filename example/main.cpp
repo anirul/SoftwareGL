@@ -22,7 +22,7 @@ int WINAPI WinMain(
 int main(int ac, char** av)
 #endif
 {
-	WindowSDL2GL window(std::make_shared<WindowSoftwareGL>());
+	SoftwareGL::WindowSDL2GL window(std::make_shared<WindowSoftwareGL>());
 	window.Startup();
 	return 0;
 }

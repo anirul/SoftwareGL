@@ -1,8 +1,9 @@
 #pragma once
 
 #include "../software_gl/ImageInterface.h"
+#include "../software_gl/VectorMath.h"
 
-class WindowSoftwareGL : public WindowInterface
+class WindowSoftwareGL : public SoftwareGL::WindowInterface
 {
 public:
 	bool Startup(const std::pair<int, int>& gl_version) override
@@ -10,7 +11,7 @@ public:
 		glGenTextures(1, &texture_id_);
 		current_image_.assign(
 			screen_width_ * screen_height_, 
-			{ 40, 0, 40, 255 });
+			{ 0.2f, 0.0f, 0.2f, 1.0f });
 		return true;
 	}
 
@@ -27,7 +28,7 @@ public:
 			screen_height_,
 			0,
 			GL_RGBA,
-			GL_UNSIGNED_BYTE,
+			GL_FLOAT,
 			&current_image_[0]);
 		// Copy it to the 1 quad on the screen.
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -77,5 +78,5 @@ protected:
 	GLuint screen_width_ = 1280;
 	GLuint screen_height_ = 720;
 	GLuint texture_id_ = 0;
-	std::vector<Pixel> current_image_;
+	std::vector<VectorMath::vector> current_image_;
 };
