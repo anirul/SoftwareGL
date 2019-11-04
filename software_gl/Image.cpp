@@ -130,8 +130,10 @@ namespace SoftwareGL {
 		// Get if current point is in triangle using barycentric coordinates.
 		for (int x = min_x; x < max_x; ++x)
 		{
+			if ((x < 0.0f) || (x > dx_ - 1)) continue;
 			for (int y = min_y; y < max_y; ++y)
 			{
+				if ((y < 0.0f) || (y > dy_ - 1)) continue;
 				// Compute barycentric coordinates.
 				const float s = A * (Bs + Cs * x + Ds * y);
 				if ((s < 0.0f) || (s > 1.0f)) continue;
