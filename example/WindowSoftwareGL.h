@@ -17,13 +17,13 @@ public:
 	{
 		SoftwareGL::Vertex v[3] = { 
 			SoftwareGL::Vertex(
-				VectorMath::vector2(640, 20), 
+				VectorMath::vector2(320, 20), 
 				VectorMath::vector4(1.0, 0.0, 0.0, 1.0)),
 			SoftwareGL::Vertex(
-				VectorMath::vector2(100, 700), 
+				VectorMath::vector2(100, 460), 
 				VectorMath::vector4(0.0, 1.0, 0.0, 1.0)),
 			SoftwareGL::Vertex(
-				VectorMath::vector2(1060, 700), 
+				VectorMath::vector2(540, 460), 
 				VectorMath::vector4(0.0, 0.0, 1.0, 1.0))
 		};
 		current_image_.DrawTriangle(v[0], v[1], v[2]);
@@ -85,8 +85,8 @@ public:
 	void Cleanup() override {}
 
 protected:
-	GLuint screen_width_ = 1280;
-	GLuint screen_height_ = 720;
+	GLuint screen_width_ = 640;
+	GLuint screen_height_ = 480;
 	GLuint texture_id_ = 0;
 	SoftwareGL::Image current_image_{screen_width_, screen_height_};
 };
