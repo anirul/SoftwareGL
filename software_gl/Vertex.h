@@ -9,33 +9,27 @@ namespace SoftwareGL {
 	public:
 		Vertex() = default;
 		Vertex(
-			const VectorMath::vector2& screen_position,
+			const VectorMath::vector4& position,
 			const VectorMath::vector4& color) :
-			screen_position_(screen_position), color_(color) {}
+			position_(position), color_(color) {}
 		Vertex(const Vertex&) = default;
 		Vertex& operator=(const Vertex& v) 
 		{
-			screen_position_ = v.screen_position_;
+			position_ = v.position_;
 			color_ = v.color_;
 			return *this;
 		}
 
 	public:
-		const VectorMath::vector2 GetPosition() const 
-		{ 
-			return screen_position_; 
-		}
-		const float GetX() const { return screen_position_.x; }
-		const float GetY() const { return screen_position_.y; }
+		const VectorMath::vector4 GetPosition() const { return position_; }
+		const float GetX() const { return position_.x; }
+		const float GetY() const { return position_.y; }
 		const VectorMath::vector4 GetColor() const { return color_;	}
 		void SetColor(const VectorMath::vector4& color) { color_ = color; }
-		void SetPosition(const VectorMath::vector2& pos) 
-		{ 
-			screen_position_ = pos; 
-		}
+		void SetPosition(const VectorMath::vector4& pos) { position_ = pos; }
 
 	protected:
-		VectorMath::vector2 screen_position_;
+		VectorMath::vector4 position_;
 		VectorMath::vector4 color_;
 	};
 

@@ -7,6 +7,11 @@
 class WindowSoftwareGL : public SoftwareGL::WindowInterface
 {
 public:
+	WindowSoftwareGL(size_t width, size_t height) : 
+		screen_width_(width), 
+		screen_height_(height), 
+		current_image_(width, height) {}
+
 	bool Startup(const std::pair<int, int>& gl_version) override
 	{
 		glGenTextures(1, &texture_id_);
@@ -15,40 +20,48 @@ public:
 
 	bool RunCompute() override
 	{
+		//TODO Should clean to the correct ambient light.
 		std::fill(
 			current_image_.begin(), 
 			current_image_.end(), 
-			VectorMath::vector4(0, 0, 0, 1));
+			VectorMath::vector4(.2f, .0f, .2f, 1.f));
 		static float time = 0;
-		time += 0.01;
+		time += .01f;
+		const float half_height = screen_height_ / 2.0f;
+		const float half_width = screen_width_ / 2.0f;
 		VectorMath::matrix rotation;
 		rotation.IdentityMatrix();
 		rotation.RotateZMatrix(time);
 		VectorMath::matrix translation_center;
 		translation_center.IdentityMatrix();
-		translation_center.TranslateMatrix(-320, -220, 0);
+		translation_center.TranslateMatrix(-half_width, -half_height, 0);
 		VectorMath::matrix translation_back;
 		translation_back.IdentityMatrix();
-		translation_back.TranslateMatrix(320, 220, 0);
+		translation_back.TranslateMatrix(half_width, half_height, 0);
 		// Create triangles.
 		SoftwareGL::Vertex v[3] = { 
 			SoftwareGL::Vertex(
-				VectorMath::vector2(320, 20), 
+				VectorMath::vector4(half_width, 20, 0, 1),
 				VectorMath::vector4(1.0, 0.0, 0.0, 1.0)),
 			SoftwareGL::Vertex(
-				VectorMath::vector2(100, 460), 
+				VectorMath::vector4(100, screen_height_ - 20, 0, 1), 
 				VectorMath::vector4(0.0, 1.0, 0.0, 1.0)),
 			SoftwareGL::Vertex(
-				VectorMath::vector2(540, 460), 
+				VectorMath::vector4(
+					screen_width_ - 100, 
+					screen_height_ - 20, 
+					0, 
+					1), 
 				VectorMath::vector4(0.0, 0.0, 1.0, 1.0))
 		};
-		VectorMath::matrix view = translation_center * rotation * translation_back;
+		VectorMath::matrix view = 
+			translation_center * rotation * translation_back;
 		for (int i = 0; i < 3; ++i)
 		{
 			auto vec_res = VectorMath::VectorMult(
 				VectorMath::vector4(v[i].GetX(), v[i].GetY(), 0, 1),
 				view);
-			v[i].SetPosition(VectorMath::vector2(vec_res.x, vec_res.y));
+			v[i].SetPosition(VectorMath::vector4(vec_res.x, vec_res.y, 0, 1));
 				
 		}
 		// Draw the triangle.
@@ -117,6 +130,11 @@ public:
 	}
 
 	void Cleanup() override {}
+
+	const std::pair<size_t, size_t> GetWindowSize() const override
+	{
+		return std::make_pair(screen_width_, screen_height_);
+	}
 
 protected:
 	GLuint screen_width_ = 640;

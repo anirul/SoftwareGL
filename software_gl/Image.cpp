@@ -45,9 +45,11 @@ namespace SoftwareGL {
 			for (; x <= v2_.GetX(); ++x)
 			{
 				const Vertex v(
-					VectorMath::vector2(
+					VectorMath::vector4(
 						static_cast<float>(x),
-						static_cast<float>(y)),
+						static_cast<float>(y),
+						0, 
+						1),
 					v1_.GetColor());
 				DrawPixel(v);
 				error += deltaerr;
@@ -75,9 +77,11 @@ namespace SoftwareGL {
 			{
 				// TODO(dubouchet): Interpolate color.
 				const Vertex v(
-					VectorMath::vector2(
+					VectorMath::vector4(
 						static_cast<float>(x),
-						static_cast<float>(y)),
+						static_cast<float>(y),
+						0,
+						1),
 					v1_.GetColor());
 				DrawPixel(v);
 				error += deltaerr;
@@ -116,36 +120,39 @@ namespace SoftwareGL {
 			v1.GetY() * (-v2.GetX() + v3.GetX()) + 
 			v1.GetX() * (v2.GetY() - v3.GetY()) + 
 			v2.GetX() * v3.GetY());
+		const float A = 1.0f / (2.0f * area);
+		const float Bs = v1.GetY() * v3.GetX() - v1.GetX() * v3.GetY();
+		const float Cs = v3.GetY() - v1.GetY();
+		const float Ds = v1.GetX() - v3.GetX();
+		const float Bt = v1.GetX() * v2.GetY() - v1.GetY() * v2.GetX();
+		const float Ct = v1.GetY() - v2.GetY();
+		const float Dt = v2.GetX() - v1.GetX();
 		// Get if current point is in triangle using barycentric coordinates.
 		for (int x = min_x; x < max_x; ++x)
 		{
 			for (int y = min_y; y < max_y; ++y)
 			{
 				// Compute barycentric coordinates.
-				const float s = 1.0f / (2.0f * area) * 
-					(v1.GetY() * v3.GetX() - v1.GetX() * v3.GetY() + 
-					(v3.GetY() - v1.GetY()) * x + (v1.GetX() - v3.GetX()) * y);
-				const float t = 1.0f / (2.0f * area) * 
-					(v1.GetX() * v2.GetY() - v1.GetY() * v2.GetX() + 
-					(v1.GetY() - v2.GetY()) * x + (v2.GetX() - v1.GetX()) * y);
+				const float s = A * (Bs + Cs * x + Ds * y);
+				if ((s < 0.0f) || (s > 1.0f)) continue;
+				const float t = A * (Bt + Ct * x + Dt * y);
+				if ((t < 0.0f) || (t > 1.0f)) continue;
 				// Check if correct.
 				const float u = s + t;
-				if ((s >= 0.0f) && (s <= 1.0f) &&
-					(t >= 0.0f) && (t <= 1.0f) &&
-					(u >= 0.0f) && (u <= 1.0f))
-				{
-					// Interpolate color using s & t.
-					VectorMath::vector4 color = 
-						v1.GetColor() * s + 
-						v2.GetColor() * t + 
-						v3.GetColor() * (1.0f - u);
-					const Vertex v(
-						VectorMath::vector2(
-							static_cast<float>(x), 
-							static_cast<float>(y)), 
-						color);
-					DrawPixel(v);
-				}
+				if ((u < 0.0f) || (u > 1.0f)) continue;
+				// Interpolate color using s & t.
+				VectorMath::vector4 color = 
+					v1.GetColor() * s + 
+					v2.GetColor() * t + 
+					v3.GetColor() * (1.0f - u);
+				const Vertex v(
+					VectorMath::vector4(
+						static_cast<float>(x), 
+						static_cast<float>(y),
+						0,
+						1),
+					color);
+				DrawPixel(v);				
 			}
 		}
 	}

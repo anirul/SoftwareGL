@@ -29,12 +29,13 @@ namespace SoftwareGL {
 #endif
 			return;
 		}
+		const auto p_size = window_interface_->GetWindowSize();
 		sdl_window_ = SDL_CreateWindow(
 			"Software GL",
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
-			640,
-			480,
+			p_size.first,
+			p_size.second,
 			SDL_WINDOW_OPENGL);
 		if (!sdl_window_)
 		{
