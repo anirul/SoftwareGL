@@ -6,7 +6,10 @@ find_package(SDL2 CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 
 add_library(SoftwareGL STATIC
+    ${PROJECT_SOURCE_DIR}/software_gl/Image.h
+    ${PROJECT_SOURCE_DIR}/software_gl/Image.cpp
     ${PROJECT_SOURCE_DIR}/software_gl/ImageInterface.h
+    ${PROJECT_SOURCE_DIR}/software_gl/Vertex.h
     ${PROJECT_SOURCE_DIR}/software_gl/WindowInterface.h
     ${PROJECT_SOURCE_DIR}/software_gl/WindowSDL2GL.cpp
     ${PROJECT_SOURCE_DIR}/software_gl/WindowSDL2GL.h

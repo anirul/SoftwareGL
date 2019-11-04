@@ -2,6 +2,7 @@
 
 #include "../software_gl/ImageInterface.h"
 #include "../software_gl/VectorMath.h"
+#include "../software_gl/Image.h"
 
 class WindowSoftwareGL : public SoftwareGL::WindowInterface
 {
@@ -9,14 +10,23 @@ public:
 	bool Startup(const std::pair<int, int>& gl_version) override
 	{
 		glGenTextures(1, &texture_id_);
-		current_image_.assign(
-			screen_width_ * screen_height_, 
-			{ 0.2f, 0.0f, 0.2f, 1.0f });
 		return true;
 	}
 
 	bool RunCompute() override
 	{
+		SoftwareGL::Vertex v[3] = { 
+			SoftwareGL::Vertex(
+				VectorMath::vector2(640, 20), 
+				VectorMath::vector4(1.0, 0.0, 0.0, 1.0)),
+			SoftwareGL::Vertex(
+				VectorMath::vector2(100, 700), 
+				VectorMath::vector4(0.0, 1.0, 0.0, 1.0)),
+			SoftwareGL::Vertex(
+				VectorMath::vector2(1060, 700), 
+				VectorMath::vector4(0.0, 0.0, 1.0, 1.0))
+		};
+		current_image_.DrawTriangle(v[0], v[1], v[2]);
 		// Copy the current image into the texture.
 		glBindTexture(GL_TEXTURE_2D, texture_id_);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -78,5 +88,5 @@ protected:
 	GLuint screen_width_ = 1280;
 	GLuint screen_height_ = 720;
 	GLuint texture_id_ = 0;
-	std::vector<VectorMath::vector> current_image_;
+	SoftwareGL::Image current_image_{screen_width_, screen_height_};
 };

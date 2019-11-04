@@ -114,7 +114,11 @@ namespace VectorMath {
 
 		// Constructors and conversions:
 
-		matrix() {}
+		matrix() : matrix(
+			1, 0, 0, 0, 
+			0, 1, 0, 0, 
+			0, 0, 1, 0,
+			0, 0, 0, 1) {}
 		matrix(const matrix& m) : 
 			_L1(m._L1), _L2(m._L2), _L3(m._L3), _L4(m._L4) {}
 		matrix(
@@ -208,7 +212,7 @@ namespace VectorMath {
 
 		// Constructors and conversions:
 
-		vector() {}
+		vector() : vector(0, 0, 0, 1) {}
 		vector(const vector& v) : vec(v.vec) {}
 		explicit vector(const __m128 &m) : vec(m) {}
 #ifdef ENABLE_VEC
@@ -311,7 +315,7 @@ namespace VectorMath {
 
 		// Constructors and conversions:
 
-		vector3() {}
+		vector3() : vector3(0, 0, 0) {}
 		vector3(const vector3& v) : vec(v.vec) {}
 		explicit vector3(const __m128 &m) : vec(m) {}
 #ifdef ENABLE_VEC
@@ -412,7 +416,7 @@ namespace VectorMath {
 
 		// Constructors and conversions:
 
-		vector2() {}
+		vector2() : vector2(0, 0) {}
 		vector2(const vector3& v) : vec(v.vec) {}
 		explicit vector2(const __m128 &m) : vec(m) {}
 #ifdef ENABLE_VEC
