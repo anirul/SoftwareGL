@@ -15,6 +15,21 @@ public:
 
 	bool RunCompute() override
 	{
+		std::fill(
+			current_image_.begin(), 
+			current_image_.end(), 
+			VectorMath::vector4(0, 0, 0, 1));
+		static float time = 0;
+		time += 0.01;
+		VectorMath::matrix rotation;
+		rotation.IdentityMatrix();
+		rotation.RotateZMatrix(time);
+		VectorMath::matrix translation_center;
+		translation_center.IdentityMatrix();
+		translation_center.TranslateMatrix(-320, -220, 0);
+		VectorMath::matrix translation_back;
+		translation_back.IdentityMatrix();
+		translation_back.TranslateMatrix(320, 220, 0);
 		// Create triangles.
 		SoftwareGL::Vertex v[3] = { 
 			SoftwareGL::Vertex(
@@ -27,6 +42,15 @@ public:
 				VectorMath::vector2(540, 460), 
 				VectorMath::vector4(0.0, 0.0, 1.0, 1.0))
 		};
+		VectorMath::matrix view = translation_center * rotation * translation_back;
+		for (int i = 0; i < 3; ++i)
+		{
+			auto vec_res = VectorMath::VectorMult(
+				VectorMath::vector4(v[i].GetX(), v[i].GetY(), 0, 1),
+				view);
+			v[i].SetPosition(VectorMath::vector2(vec_res.x, vec_res.y));
+				
+		}
 		// Draw the triangle.
 		current_image_.DrawTriangle(v[0], v[1], v[2]);
 		// Change color to be white.

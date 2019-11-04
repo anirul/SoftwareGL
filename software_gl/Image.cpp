@@ -12,8 +12,8 @@ namespace SoftwareGL {
 		if (v.GetY() > (dy_ - 1)) return;
 		// Draw the pixel
 		operator[](
-			static_cast<size_t>(v.GetX()) + 
-			static_cast<size_t>(v.GetY()) * dx_) =
+			static_cast<int>(v.GetX()) + 
+			static_cast<int>(v.GetY()) * dx_) =
 			v.GetColor();
 	}
 
@@ -40,8 +40,8 @@ namespace SoftwareGL {
 		{
 			const float deltaerr = abs(dy / dx);
 			float error = 0.0f;
-			size_t x = static_cast<size_t>(v1_.GetX());
-			size_t y = static_cast<size_t>(v1_.GetY());
+			int x = static_cast<int>(v1_.GetX());
+			int y = static_cast<int>(v1_.GetY());
 			for (; x <= v2_.GetX(); ++x)
 			{
 				const Vertex v(
@@ -53,7 +53,7 @@ namespace SoftwareGL {
 				error += deltaerr;
 				if (error >= 0.5f)
 				{
-					y += static_cast<size_t>(sign(dy));
+					y += static_cast<int>(sign(dy));
 					error -= 1.0f;
 				}
 			}
@@ -69,8 +69,8 @@ namespace SoftwareGL {
 			}
 			const float deltaerr = abs(dx / dy);
 			float error = 0.0f;
-			size_t x = static_cast<size_t>(v1_.GetX());
-			size_t y = static_cast<size_t>(v1_.GetY());
+			int x = static_cast<int>(v1_.GetX());
+			int y = static_cast<int>(v1_.GetY());
 			for (; y <= v2_.GetY(); ++y) 
 			{
 				// TODO(dubouchet): Interpolate color.
@@ -83,7 +83,7 @@ namespace SoftwareGL {
 				error += deltaerr;
 				if (error >= 0.5f)
 				{
-					x += static_cast<size_t>(sign(dx));
+					x += static_cast<int>(sign(dx));
 					error -= 1.0f;
 				}
 			}
@@ -102,14 +102,14 @@ namespace SoftwareGL {
 		// Should swap with array but having trouble with VC++.
 		const std::vector<float> vec_x{ v1.GetX(), v2.GetX(), v3.GetX() };
 		const std::vector<float> vec_y{ v1.GetY(), v2.GetY(), v3.GetY() };
-		size_t min_x = 
-			static_cast<size_t>(*std::min_element(vec_x.begin(), vec_x.end()));
-		size_t min_y = 
-			static_cast<size_t>(*std::min_element(vec_y.begin(), vec_y.end()));
-		size_t max_x =
-			static_cast<size_t>(*std::max_element(vec_x.begin(), vec_x.end()));
-		size_t max_y =
-			static_cast<size_t>(*std::max_element(vec_y.begin(), vec_y.end()));
+		int min_x = 
+			static_cast<int>(*std::min_element(vec_x.begin(), vec_x.end()));
+		int min_y = 
+			static_cast<int>(*std::min_element(vec_y.begin(), vec_y.end()));
+		int max_x =
+			static_cast<int>(*std::max_element(vec_x.begin(), vec_x.end()));
+		int max_y =
+			static_cast<int>(*std::max_element(vec_y.begin(), vec_y.end()));
 		// Compute area.
 		float area = 0.5f * 
 			(-v2.GetY() * v3.GetX() + 
@@ -117,9 +117,9 @@ namespace SoftwareGL {
 			v1.GetX() * (v2.GetY() - v3.GetY()) + 
 			v2.GetX() * v3.GetY());
 		// Get if current point is in triangle using barycentric coordinates.
-		for (size_t x = min_x; x < max_x; ++x)
+		for (int x = min_x; x < max_x; ++x)
 		{
-			for (size_t y = min_y; y < max_y; ++y)
+			for (int y = min_y; y < max_y; ++y)
 			{
 				// Compute barycentric coordinates.
 				const float s = 1.0f / (2.0f * area) * 
@@ -140,7 +140,7 @@ namespace SoftwareGL {
 						v2.GetColor() * t + 
 						v3.GetColor() * (1.0f - u);
 					const Vertex v(
-						VectorMath::vector2 (
+						VectorMath::vector2(
 							static_cast<float>(x), 
 							static_cast<float>(y)), 
 						color);
