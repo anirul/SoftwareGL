@@ -28,6 +28,7 @@ namespace SoftwareGL {
 		const float GetX() const { return screen_position_.x; }
 		const float GetY() const { return screen_position_.y; }
 		const VectorMath::vector4 GetColor() const { return color_;	}
+		void SetColor(const VectorMath::vector4& color) { color_ = color; }
 
 	protected:
 		VectorMath::vector2 screen_position_;

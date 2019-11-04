@@ -29,13 +29,14 @@ namespace SoftwareGL {
 		Vertex v1_ = v1;
 		Vertex v2_ = v2;
 		// Check that v1 is before v2 else swap them.
-		if (v1_.GetX() > v2_.GetX()) std::swap(v1_, v2_);
-		const float dx = 
-			static_cast<float>(v2_.GetX()) - static_cast<float>(v1_.GetX());
-		const float dy = 
-			static_cast<float>(v2_.GetY()) - static_cast<float>(v1_.GetY());
+		if (v1_.GetX() > v2_.GetX())
+		{
+			std::swap(v1_, v2_);
+		}
+		float dx = v2_.GetX() - v1_.GetX();
+		float dy = v2_.GetY() - v1_.GetY();
 		// Check the line is not horizontal.
-		if (dx > dy) 
+		if (abs(dx) > abs(dy))
 		{
 			const float deltaerr = abs(dy / dx);
 			float error = 0.0f;
@@ -60,7 +61,12 @@ namespace SoftwareGL {
 		else 
 		{
 			// Check that the v1_ y is before the v2_ y else swap them.
-			if (v1_.GetY() > v2_.GetY()) std::swap(v1_, v2_);
+			if (v1_.GetY() > v2_.GetY())
+			{
+				std::swap(v1_, v2_);
+				dx = v2_.GetX() - v1_.GetX();
+				dy = v2_.GetY() - v1_.GetY();
+			}
 			const float deltaerr = abs(dx / dy);
 			float error = 0.0f;
 			size_t x = static_cast<size_t>(v1_.GetX());

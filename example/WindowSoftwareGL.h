@@ -15,6 +15,7 @@ public:
 
 	bool RunCompute() override
 	{
+		// Create triangles.
 		SoftwareGL::Vertex v[3] = { 
 			SoftwareGL::Vertex(
 				VectorMath::vector2(320, 20), 
@@ -26,7 +27,16 @@ public:
 				VectorMath::vector2(540, 460), 
 				VectorMath::vector4(0.0, 0.0, 1.0, 1.0))
 		};
+		// Draw the triangle.
 		current_image_.DrawTriangle(v[0], v[1], v[2]);
+		// Change color to be white.
+		v[0].SetColor(VectorMath::vector4(1, 1, 1, 1));
+		v[1].SetColor(VectorMath::vector4(1, 1, 1, 1));
+		v[2].SetColor(VectorMath::vector4(1, 1, 1, 1));
+		// Draw the outline.
+		current_image_.DrawLine(v[0], v[1]);
+		current_image_.DrawLine(v[1], v[2]);
+		current_image_.DrawLine(v[2], v[0]);
 		// Copy the current image into the texture.
 		glBindTexture(GL_TEXTURE_2D, texture_id_);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
