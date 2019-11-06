@@ -6,6 +6,8 @@ find_package(SDL2 CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 
 add_library(SoftwareGL STATIC
+    ${PROJECT_SOURCE_DIR}/software_gl/Triangle.h
+    ${PROJECT_SOURCE_DIR}/software_gl/Triangle.cpp
     ${PROJECT_SOURCE_DIR}/software_gl/Image.h
     ${PROJECT_SOURCE_DIR}/software_gl/Image.cpp
     ${PROJECT_SOURCE_DIR}/software_gl/ImageInterface.h
