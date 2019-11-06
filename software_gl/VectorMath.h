@@ -136,8 +136,9 @@ namespace VectorMath {
 		// Accessing elements:
 
 		float& operator () (int i, int j) {
-			assert((0<=i) && (i<=3) && (0<=j) && (j<=3));
-			return *(((float *)&_11) + (i<<2)+j);
+			assert((0 <= i) && (i <= 3) && (0 <= j) && (j <= 3));
+#pragma warning(disable : 26451 6297)
+			return *(((float*)&_11) + (i << 2) + j);
 		}
 #ifdef ENABLE_VEC
 		F32vec4& operator () (int i) {

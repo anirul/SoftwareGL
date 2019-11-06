@@ -123,9 +123,13 @@ namespace SoftwareGL {
 			{
 				if ((y < 0.0f) || (y > dy_ - 1)) continue;
 				// Compute barycentric coordinates.
-				const float s = tri.GetBarycentricS(VectorMath::vector2(x, y));
+				const float s = tri.GetBarycentricS(VectorMath::vector2(
+					static_cast<float>(x), 
+					static_cast<float>(y)));
 				if ((s < 0.0f) || (s > 1.0f)) continue;
-				const float t = tri.GetBarycentricT(VectorMath::vector2(x, y));
+				const float t = tri.GetBarycentricT(VectorMath::vector2(
+					static_cast<float>(x), 
+					static_cast<float>(y)));
 				if ((t < 0.0f) || (t > 1.0f)) continue;
 				// Check if correct.
 				const float u = s + t;
@@ -154,26 +158,27 @@ namespace SoftwareGL {
 		for (int y = static_cast<int>(border.y); y < border.w; ++y)
 		{
 			if ((y < 0.0f) || (y > dy_ - 1)) continue;
-			VectorMath::vector4 scan_line(border.x, y, border.z, y);
+			const float fy = static_cast<float>(y);
+			VectorMath::vector4 scan_line(border.x, fy,	border.z, fy);
 			auto vec = tri.IntersectWithinBorder(scan_line);
 			if (vec.size() == 2) {
 				const float s1 = tri.GetBarycentricS(
-					VectorMath::vector2(vec[0].x, y));
+					VectorMath::vector2(vec[0].x, fy));
 				const float t1 = tri.GetBarycentricT(
-					VectorMath::vector2(vec[0].x, y));
+					VectorMath::vector2(vec[0].x, fy));
 				const float u1 = s1 + t1;
 				const float s2 = tri.GetBarycentricS(
-					VectorMath::vector2(vec[1].x, y));
+					VectorMath::vector2(vec[1].x, fy));
 				const float t2 = tri.GetBarycentricT(
-					VectorMath::vector2(vec[1].x, y));
+					VectorMath::vector2(vec[1].x, fy));
 				const float u2 = s2 + t2;
 				Vertex l1(
-					VectorMath::vector4(vec[0].x, y, 0, 1), 
+					VectorMath::vector4(vec[0].x, fy, 0, 1), 
 					tri.GetV1().GetColor() * s1 + 
 					tri.GetV2().GetColor() * t1 + 
 					tri.GetV3().GetColor() * (1 - u1));
 				Vertex l2(
-					VectorMath::vector4(vec[1].x, y, 0, 1), 
+					VectorMath::vector4(vec[1].x, fy, 0, 1), 
 					tri.GetV1().GetColor() * s2 +
 					tri.GetV2().GetColor() * t2 +
 					tri.GetV3().GetColor() * (1 - u2));

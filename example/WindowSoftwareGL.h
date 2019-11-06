@@ -81,8 +81,8 @@ public:
 		glTexImage2D(GL_TEXTURE_2D,
 			0,
 			GL_RGBA,
-			screen_width_,
-			screen_height_,
+			static_cast<GLsizei>(screen_width_),
+			static_cast<GLsizei>(screen_height_),
 			0,
 			GL_RGBA,
 			GL_FLOAT,
@@ -137,8 +137,8 @@ public:
 	}
 
 protected:
-	GLuint screen_width_ = 640;
-	GLuint screen_height_ = 480;
+	size_t screen_width_ = 640;
+	size_t screen_height_ = 480;
 	GLuint texture_id_ = 0;
 	SoftwareGL::Image current_image_{screen_width_, screen_height_};
 };

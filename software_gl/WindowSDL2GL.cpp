@@ -34,8 +34,8 @@ namespace SoftwareGL {
 			"Software GL",
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
-			p_size.first,
-			p_size.second,
+			static_cast<int>(p_size.first),
+			static_cast<int>(p_size.second),
 			SDL_WINDOW_OPENGL);
 		if (!sdl_window_)
 		{
