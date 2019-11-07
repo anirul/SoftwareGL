@@ -99,20 +99,23 @@ namespace SoftwareGL {
 	}
 
 	void Image::DrawTriangle(
-		const Vertex& v1, 
-		const Vertex& v2, 
-		const Vertex& v3)
+		const Triangle& tri,
+		const VectorMath::vector& normal,
+		std::vector<float>& z_buffer)
 	{
-		Triangle t(v1, v2, v3);
-		DrawTriangleBarycentric(t);
-		// DrawTriangleScanLine(t);
+		DrawTriangleBarycentric(tri, normal, z_buffer);
+		// DrawTriangleScanLine(tri, normal, z_buffer);
 	}
 
 	// Draw triangle using barycentric coordinate.
 	// Using barycentric coordinate to interpolate colors.
 	// Also doesn't account for triangle order, and no Z-buffer yet.
-	void Image::DrawTriangleBarycentric(const Triangle& tri)
+	void Image::DrawTriangleBarycentric(
+		const Triangle& tri,
+		const VectorMath::vector& normal,
+		std::vector<float>& z_buffer)
 	{
+		static const VectorMath::vector4 light = {0, 0, -1, 0};
 		// Get the bounding box.
 		VectorMath::vector4 border = tri.GetBorder();
 		// Get if current point is in triangle using barycentric coordinates.
@@ -134,24 +137,46 @@ namespace SoftwareGL {
 				// Check if correct.
 				const float u = s + t;
 				if ((u < 0.0f) || (u > 1.0f)) continue;
-				// Interpolate color using s & t.
-				VectorMath::vector4 color = 
-					tri.GetV1().GetColor() * s + 
-					tri.GetV2().GetColor() * t + 
-					tri.GetV3().GetColor() * (1.0f - u);
-				const Vertex v(
-					VectorMath::vector4(
-						static_cast<float>(x), 
-						static_cast<float>(y),
-						0,
-						1),
-					color);
-				DrawPixel(v);				
+				const float z =
+					tri.GetV1().GetZ() * s +
+					tri.GetV2().GetZ() * t +
+					tri.GetV3().GetZ() * (1 - u);
+				if (z_buffer[x + y * dx_] > z)
+				{
+					z_buffer[x + y * dx_] = z;
+					// Interpolate color using s & t.
+					float shade = 1.0f;
+					if (normal.LengthSquared() != 0.0f) {
+						shade = normal * light;
+					}
+					VectorMath::vector4 color;
+					color =
+						(tri.GetV1().GetColor() * s +
+							tri.GetV2().GetColor() * t +
+							tri.GetV3().GetColor() * (1 - u)) * shade;
+					color = VectorMath::vector(
+						z_buffer[x + y * dx_], 
+						z_buffer[x + y * dx_] / 2, 
+						z_buffer[x + y * dx_] / 4,
+						1);
+					color = -normal;
+					const Vertex v(
+						VectorMath::vector4(
+							static_cast<float>(x),
+							static_cast<float>(y),
+							0,
+							1),
+						color);
+					DrawPixel(v);
+				}
 			}
 		}
 	}
 
-	void Image::DrawTriangleScanLine(const Triangle& tri)
+	void Image::DrawTriangleScanLine(
+		const Triangle& tri,
+		const VectorMath::vector& normal,
+		std::vector<float>& z_buffer)
 	{
 		VectorMath::vector4 border = tri.GetBorder();
 		// Get if current point is in triangle using barycentric coordinates.

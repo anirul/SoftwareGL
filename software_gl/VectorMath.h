@@ -283,6 +283,8 @@ namespace VectorMath {
 		friend vector operator * (const float, const vector&);
 		friend vector operator + (const vector&);
 		friend vector operator + (const vector&, const vector&);
+		friend vector operator + (const vector&, const float);
+		friend vector operator + (const float, const vector&);
 		friend vector operator - (const vector&);
 		friend vector operator - (const vector&, const vector&);
 		// Normalize
@@ -292,9 +294,11 @@ namespace VectorMath {
 		vector& operator *= (const float);
 		vector& operator |= (const vector&);
 		vector& operator += (const vector&);
+		vector& operator += (const float);
 		vector& operator -= (const vector&);
 
-		float Length();
+		float Length() const;
+		float LengthSquared() const;
 		vector& Normalize();
 	};
 
@@ -496,7 +500,6 @@ namespace VectorMath {
 		{ matrix l=m; l.Transpose(); return l; }
 
 	// some stuff for deformation
-
 	matrix AA2M3(const vector3& v, const float a);
 	inline vector3 transform_loc(
 		const matrix4& m, const vector3& v) 
@@ -510,6 +513,26 @@ namespace VectorMath {
 		vector3 r; 
 		r = v * m2; 
 		return r;	
+	}
+
+	inline matrix Projection(
+		const float fovy, 
+		const float aspect, 
+		const float z_near, 
+		const float z_far)
+	{
+		assert(aspect != 0.0f);
+		assert(z_far != z_near);
+		assert(aspect <= 2 * M_PI);
+		float tan_half_fovy = tanf(fovy / 2.0f);
+		matrix result;
+		result.ZeroMatrix();
+		result(0, 0) = 1.f / (aspect * tan_half_fovy);
+		result(1, 1) = 1.f / (tan_half_fovy);
+		result(2, 2) = z_far / (z_far - z_near);
+		result(2, 3) = 1.f;
+		result(3, 2) = -(z_far * z_near) / (z_far - z_near);
+		return result;
 	}
 
 #ifdef ENABLE_VEC
@@ -1156,6 +1179,19 @@ namespace VectorMath {
 #endif // ENABLE_VEC
 	}
 
+	inline vector operator + (const vector& A, const float f) {
+		vector res;
+		res.x = A.x + f;
+		res.y = A.y + f;
+		res.z = A.z + f;
+		res.w = A.w + f;
+		return res;
+	}
+
+	inline vector operator + (const float f, const vector& A) {
+		return A + f;
+	}
+
 	// ----------------------------------------------------------
 	//  Name:   vector - vector               _   _
 	//  Desc:   Vector substraction. Returns [A]-[B].
@@ -1186,6 +1222,14 @@ namespace VectorMath {
 		z += B.z;
 		w += B.w;
 #endif // ENABLE_VEC
+		return *this;
+	}
+
+	inline vector& vector::operator += (const float f) {
+		x += f;
+		y += f;
+		z += f;
+		w += f;
 		return *this;
 	}
 
@@ -1230,11 +1274,23 @@ namespace VectorMath {
 		return A;
 	}
 
+	inline float vector::LengthSquared() const {
+#ifdef ENABLE_VEC
+		F32vec4 r = _mm_mul_ps(vec, vec);
+		r = _mm_add_ps(_mm_movehl_ps(r, r), r);
+		F32vec1 t = _mm_add_ss(_mm_shuffle_ps(r, r, 1), r);
+		return (*(float*)&t);
+#else
+		return x * x + y * y + z * z;
+#endif // ENABLE_VEC
+
+	}
+
 	// ----------------------------------------------------------
 	//  Name:   vector::Length
 	//  Desc:   Returns the length of the vector.
 	// ----------------------------------------------------------
-	inline float vector::Length() {
+	inline float vector::Length() const {
 #ifdef ENABLE_VEC
 		F32vec4 r = _mm_mul_ps(vec,vec);
 		r = _mm_add_ps(_mm_movehl_ps(r,r),r);

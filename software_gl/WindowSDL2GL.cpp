@@ -5,17 +5,66 @@
 	#include <iostream>
 #endif
 
+#include <GL/glew.h>
+#include <SDL.h>
+
 #include "WindowSDL2GL.h"
+#include "Image.h"
 
 namespace SoftwareGL {
 
 	WindowSDL2GL::WindowSDL2GL(
 		std::shared_ptr<WindowInterface> window_interface) :
-		window_interface_(window_interface) {}
+		window_interface_(window_interface) 
+	{
+		glGenTextures(1, &texture_id_);
+	}
 
 	WindowSDL2GL::~WindowSDL2GL()
 	{
 		SDL_Quit();
+	}
+
+	void WindowSDL2GL::PostRunCompute()
+	{
+		const Image& image = window_interface_->GetWindowImage();
+		const std::pair<size_t, size_t> screen_size = 
+			window_interface_->GetWindowSize();
+		// Copy the current image into the texture.
+		glBindTexture(GL_TEXTURE_2D, texture_id_);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D,
+			0,
+			GL_RGBA,
+			static_cast<GLsizei>(screen_size.first),
+			static_cast<GLsizei>(screen_size.second),
+			0,
+			GL_RGBA,
+			GL_FLOAT,
+			image.data());
+		// Copy it to the 1 quad on the screen.
+		glClear(GL_COLOR_BUFFER_BIT);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, texture_id_);
+		{
+			glPushMatrix();
+			glBegin(GL_QUADS);
+			{
+				glTexCoord2f(0, 0);
+				glVertex2f(-1, 1);
+				glTexCoord2f(1, 0);
+				glVertex2f(1, 1);
+				glTexCoord2f(1, 1);
+				glVertex2f(1, -1);
+				glTexCoord2f(0, 1);
+				glVertex2f(-1, -1);
+			}
+			glEnd();
+			glPopMatrix();
+		}
+		glDisable(GL_TEXTURE_2D);
+		glFlush();
 	}
 
 	void WindowSDL2GL::Startup()
@@ -79,6 +128,7 @@ namespace SoftwareGL {
 				{
 					loop = false;
 				}
+				PostRunCompute();
 				SDL_GL_SwapWindow(sdl_window_);
 			} while (loop);
 			window_interface_->Cleanup();

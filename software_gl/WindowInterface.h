@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL.h>
+#include "Image.h"
 
 namespace SoftwareGL {
 
@@ -17,6 +18,8 @@ namespace SoftwareGL {
 		virtual void Cleanup() = 0;
 		// Get size of the window.
 		virtual const std::pair<size_t, size_t> GetWindowSize() const = 0;
+		// Get the window image.
+		virtual const Image& GetWindowImage() const = 0;
 	};
 
 } // End of namespace SoftwareGL.

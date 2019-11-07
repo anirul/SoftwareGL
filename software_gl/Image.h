@@ -7,7 +7,6 @@
 
 namespace SoftwareGL {
 
-	// technically you don't need y.
 	class Image : public std::vector<VectorMath::vector> {
 	public:
 		Image() {}
@@ -24,13 +23,21 @@ namespace SoftwareGL {
 		void DrawPixel(const Vertex& v);
 		void DrawLine(const Vertex& v1, const Vertex& v2);
 		void DrawTriangle(
-			const Vertex& v1,
-			const Vertex& v2,
-			const Vertex& v3);
+			const Triangle& tri, 
+			const VectorMath::vector& normal = { 0, 0, 0, 0 },
+			std::vector<float>& z_buffer = std::vector<float>());
+		const float GetWidth() const { return static_cast<float>(dx_); }
+		const float GetHeight() const { return static_cast<float>(dy_); }
 
 	protected:
-		void DrawTriangleBarycentric(const Triangle& tri);
-		void DrawTriangleScanLine(const Triangle& tri);
+		void DrawTriangleBarycentric(
+			const Triangle& tri,
+			const VectorMath::vector& normal,
+			std::vector<float>& z_buffer);
+		void DrawTriangleScanLine(
+			const Triangle& tri,
+			const VectorMath::vector& normal,
+			std::vector<float>& z_buffer);
 
 	private:
 		const size_t dx_ = 0;

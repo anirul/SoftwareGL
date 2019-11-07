@@ -24,6 +24,8 @@ namespace SoftwareGL {
 		const VectorMath::vector4 GetPosition() const { return position_; }
 		const float GetX() const { return position_.x; }
 		const float GetY() const { return position_.y; }
+		const float GetZ() const { return position_.z; }
+		const float GetW() const { return position_.w; }
 		const VectorMath::vector4 GetColor() const { return color_;	}
 		void SetColor(const VectorMath::vector4& color) { color_ = color; }
 		void SetPosition(const VectorMath::vector4& pos) { position_ = pos; }

@@ -19,9 +19,13 @@ namespace SoftwareGL {
 		void Startup();
 
 	protected:
+		void PostRunCompute();
+
+	private:
 		std::shared_ptr<WindowInterface> window_interface_;
 		SDL_Window* sdl_window_;
 		SDL_GLContext sdl_gl_context_;
+		unsigned int texture_id_;
 	};
 
 }	// End of namespace SoftwareGL

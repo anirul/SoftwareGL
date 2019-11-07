@@ -6,6 +6,10 @@ find_package(SDL2 CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 
 add_library(SoftwareGL STATIC
+    ${PROJECT_SOURCE_DIR}/software_gl/Mesh.h
+    ${PROJECT_SOURCE_DIR}/software_gl/Mesh.cpp
+    ${PROJECT_SOURCE_DIR}/software_gl/Camera.h
+    ${PROJECT_SOURCE_DIR}/software_gl/Camera.cpp
     ${PROJECT_SOURCE_DIR}/software_gl/Triangle.h
     ${PROJECT_SOURCE_DIR}/software_gl/Triangle.cpp
     ${PROJECT_SOURCE_DIR}/software_gl/Image.h
@@ -27,6 +31,7 @@ target_link_libraries(SoftwareGL PRIVATE
 add_executable(Game WIN32
     ${PROJECT_SOURCE_DIR}/example/main.cpp
     ${PROJECT_SOURCE_DIR}/example/WindowSoftwareGL.h
+    ${PROJECT_SOURCE_DIR}/example/WindowSoftwareGL.cpp
 )
 
 target_link_libraries(Game PRIVATE
