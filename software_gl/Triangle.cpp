@@ -15,12 +15,14 @@ namespace SoftwareGL {
 
 	float Triangle::GetBarycentricS(const VectorMath::vector2& pos) const
 	{
-		return A_ * (Bs_ + Cs_ * pos.x + Ds_ * pos.y);
+		return ((v2_.GetY() - v3_.GetY()) * (pos.x - v3_.GetX()) + 
+			(v3_.GetX() - v2_.GetX()) * (pos.y - v3_.GetY())) * den_;
 	}
 
 	float Triangle::GetBarycentricT(const VectorMath::vector2& pos) const
 	{
-		return A_ * (Bt_ + Ct_ * pos.x + Dt_ * pos.y);
+		return ((v3_.GetY() - v1_.GetY()) * (pos.x - v3_.GetX()) + 
+			(v1_.GetX() - v3_.GetX()) * (pos.y - v3_.GetY())) * den_;
 	}
 
 	std::vector<VectorMath::vector2> Triangle::IntersectWithinBorder(

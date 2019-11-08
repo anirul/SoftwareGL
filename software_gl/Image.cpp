@@ -134,13 +134,14 @@ namespace SoftwareGL {
 					static_cast<float>(x), 
 					static_cast<float>(y)));
 				if ((t < 0.0f) || (t > 1.0f)) continue;
-				// Check if correct.
-				const float u = s + t;
+				const float u = 1.f - (s + t);
 				if ((u < 0.0f) || (u > 1.0f)) continue;
+				assert((1 - (s + t + u)) < epsilon);
+				// Compute z using barycentric coordinates.
 				const float z =
 					tri.GetV1().GetZ() * s +
 					tri.GetV2().GetZ() * t +
-					tri.GetV3().GetZ() * (1.f - s - t);
+					tri.GetV3().GetZ() * u;
 				if (z_buffer[x + y * dx_] > z)
 				{
 					z_buffer[x + y * dx_] = z;
@@ -153,19 +154,7 @@ namespace SoftwareGL {
 					color =
 						(tri.GetV1().GetColor() * s +
 							tri.GetV2().GetColor() * t +
-							tri.GetV3().GetColor() * (1 - u)) * shade;
-					if (0) {
-						static float min = std::numeric_limits<float>::max();
-						static float max = std::numeric_limits<float>::min();
-						min = std::min(min, z);
-						max = std::max(max, z);
-						const float a = max - min;
-						color = VectorMath::vector(
-							(z - min) / a,
-							(z - min) / a,
-							(z - min) / a,
-							1);
-					}
+							tri.GetV3().GetColor() * u) * shade;
 					const Vertex v(
 						VectorMath::vector4(
 							static_cast<float>(x),
@@ -197,22 +186,22 @@ namespace SoftwareGL {
 					VectorMath::vector2(vec[0].x, fy));
 				const float t1 = tri.GetBarycentricT(
 					VectorMath::vector2(vec[0].x, fy));
-				const float u1 = s1 + t1;
+				const float u1 = 1 - (s1 + t1);
 				const float s2 = tri.GetBarycentricS(
 					VectorMath::vector2(vec[1].x, fy));
 				const float t2 = tri.GetBarycentricT(
 					VectorMath::vector2(vec[1].x, fy));
-				const float u2 = s2 + t2;
+				const float u2 = 1 - (s2 + t2);
 				Vertex l1(
 					VectorMath::vector4(vec[0].x, fy, 0, 1), 
 					tri.GetV1().GetColor() * s1 + 
 					tri.GetV2().GetColor() * t1 + 
-					tri.GetV3().GetColor() * (1 - u1));
+					tri.GetV3().GetColor() * u1);
 				Vertex l2(
 					VectorMath::vector4(vec[1].x, fy, 0, 1), 
 					tri.GetV1().GetColor() * s2 +
 					tri.GetV2().GetColor() * t2 +
-					tri.GetV3().GetColor() * (1 - u2));
+					tri.GetV3().GetColor() * u2);
 				DrawLine(l1, l2);
 			}
 		}

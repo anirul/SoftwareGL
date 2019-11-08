@@ -36,15 +36,9 @@ namespace SoftwareGL {
 				v1_.GetY() * (-v2_.GetX() + v3_.GetX()) +
 				v1_.GetX() * (v2_.GetY() - v3_.GetY()) +
 				v2_.GetX() * v3_.GetY());
-		const float A_ = 1.0f / (2.0f * area_);
-		const float Bs_ =
-			v1_.GetY() * v3_.GetX() - v1_.GetX() * v3_.GetY();
-		const float Cs_ = v3_.GetY() - v1_.GetY();
-		const float Ds_ = v1_.GetX() - v3_.GetX();
-		const float Bt_ =
-			v1_.GetX() * v2_.GetY() - v1_.GetY() * v2_.GetX();
-		const float Ct_ = v1_.GetY() - v2_.GetY();
-		const float Dt_ = v2_.GetX() - v1_.GetX();
+		const float den_ = 1.f / ((v2_.GetY() - v3_.GetY()) * 
+			(v1_.GetX() - v3_.GetX()) + (v3_.GetX() - v2_.GetX()) * 
+			(v1_.GetY() - v3_.GetY()));
 		// Could't get the constexpr version of min and max to work.
 		const VectorMath::vector4 border_ = {
 			(v1_.GetX() < v2_.GetX()) ?
