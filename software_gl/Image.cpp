@@ -121,8 +121,8 @@ namespace SoftwareGL {
 		const VectorMath::vector& normal,
 		std::vector<float>& z_buffer)
 	{
-		// DrawTriangleBarycentric(tri, normal, z_buffer);
-		DrawTriangleScanLine(tri, normal, z_buffer);
+		DrawTriangleBarycentric(tri, normal, z_buffer);
+		// DrawTriangleScanLine(tri, normal, z_buffer);
 	}
 
 	// Draw triangle using barycentric coordinate.
