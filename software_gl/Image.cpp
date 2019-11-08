@@ -6,21 +6,37 @@
 
 namespace SoftwareGL {
 
-	void Image::DrawPixel(const Vertex& v)
+	void Image::DrawPixel(const Vertex& v, std::vector<float>& z_buffer)
 	{
 		// Check boundaries.
 		if (v.GetX() < 0) return;
 		if (v.GetX() > (dx_ - 1)) return;
 		if (v.GetY() < 0) return;
 		if (v.GetY() > (dy_ - 1)) return;
+		if (z_buffer.size() != 0) 
+		{
+			const size_t index =
+				static_cast<size_t>(v.GetX()) +
+				static_cast<size_t>(v.GetY()) * dx_;
+			assert(index < z_buffer.size());
+			if (z_buffer[index] <= v.GetZ())
+			{
+				return;
+			}
+			z_buffer[index] = v.GetZ();
+		}
 		// Draw the pixel
 		operator[](
-			static_cast<int>(v.GetX()) + 
+			static_cast<int>(v.GetX()) +
 			static_cast<int>(v.GetY()) * dx_) =
 			v.GetColor();
 	}
 
-	void Image::DrawLine(const Vertex& v1, const Vertex& v2)
+	void Image::DrawLine(
+		const Vertex& v1, 
+		const Vertex& v2, 
+		const VectorMath::vector& normal,
+		std::vector<float>& z_buffer)
 	{
 		// Sign operation.
 		auto sign = [](float val)->float {
@@ -45,17 +61,19 @@ namespace SoftwareGL {
 			float error = 0.0f;
 			int x = static_cast<int>(v1_.GetX());
 			int y = static_cast<int>(v1_.GetY());
+			const float z = v1_.GetZ();
 			for (; x <= v2_.GetX(); ++x)
 			{
 				const float s = (x - v1_.GetX()) / dx;
+				const float z = v1_.GetZ() * s + v2_.GetZ() * (1 - s);
 				const Vertex v(
 					VectorMath::vector4(
 						static_cast<float>(x),
 						static_cast<float>(y),
-						0, 
-						1),
+						z, 
+						0),
 					v1_.GetColor() * s + v2_.GetColor() * (1 - s));
-				DrawPixel(v);
+				DrawPixel(v, z_buffer);
 				error += deltaerr;
 				if (error >= 0.5f)
 				{
@@ -87,7 +105,7 @@ namespace SoftwareGL {
 						0,
 						1),
 					v1_.GetColor() * s + v2_.GetColor() * (1 - s));
-				DrawPixel(v);
+				DrawPixel(v, z_buffer);
 				error += deltaerr;
 				if (error >= 0.5f)
 				{
@@ -103,8 +121,8 @@ namespace SoftwareGL {
 		const VectorMath::vector& normal,
 		std::vector<float>& z_buffer)
 	{
-		DrawTriangleBarycentric(tri, normal, z_buffer);
-		// DrawTriangleScanLine(tri, normal, z_buffer);
+		// DrawTriangleBarycentric(tri, normal, z_buffer);
+		DrawTriangleScanLine(tri, normal, z_buffer);
 	}
 
 	// Draw triangle using barycentric coordinate.
@@ -142,28 +160,24 @@ namespace SoftwareGL {
 					tri.GetV1().GetZ() * s +
 					tri.GetV2().GetZ() * t +
 					tri.GetV3().GetZ() * u;
-				if (z_buffer[x + y * dx_] > z)
-				{
-					z_buffer[x + y * dx_] = z;
-					// Interpolate color using s & t.
-					float shade = 1.0f;
-					if (normal.LengthSquared() != 0.0f) {
-						shade = normal * light;
-					}
-					VectorMath::vector4 color;
-					color =
-						(tri.GetV1().GetColor() * s +
-							tri.GetV2().GetColor() * t +
-							tri.GetV3().GetColor() * u) * shade;
-					const Vertex v(
-						VectorMath::vector4(
-							static_cast<float>(x),
-							static_cast<float>(y),
-							0,
-							1),
-						color);
-					DrawPixel(v);
+				// Interpolate color using s & t.
+				float shade = 1.0f;
+				if (normal.LengthSquared() != 0.0f) {
+					shade = normal * light;
 				}
+				VectorMath::vector4 color;
+				color =
+					(tri.GetV1().GetColor() * s +
+						tri.GetV2().GetColor() * t +
+						tri.GetV3().GetColor() * u) * shade;
+				const Vertex v(
+					VectorMath::vector4(
+						static_cast<float>(x),
+						static_cast<float>(y),
+						z,
+						1),
+					color);
+				DrawPixel(v, z_buffer);
 			}
 		}
 	}

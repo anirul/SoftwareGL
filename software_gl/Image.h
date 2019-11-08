@@ -20,8 +20,14 @@ namespace SoftwareGL {
 		{ 
 			return std::make_pair(dx_, dy_); 
 		}
-		void DrawPixel(const Vertex& v);
-		void DrawLine(const Vertex& v1, const Vertex& v2);
+		void DrawPixel(
+			const Vertex& v,
+			std::vector<float>& z_buffer = std::vector<float>());
+		void DrawLine(
+			const Vertex& v1, 
+			const Vertex& v2, 
+			const VectorMath::vector& normal = { 0, 0, 0, 0 },
+			std::vector<float>& z_buffer = std::vector<float>());
 		void DrawTriangle(
 			const Triangle& tri, 
 			const VectorMath::vector& normal = { 0, 0, 0, 0 },
