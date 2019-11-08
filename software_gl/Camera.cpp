@@ -32,4 +32,9 @@ namespace SoftwareGL {
 		return (to - pos).Normalize();
 	}
 
+	const VectorMath::vector Camera::Position() const
+	{
+		return { pos_.x, pos_.y, pos_.z, 0 };
+	}
+
 }	// End namespace SoftwareGL.

@@ -13,6 +13,7 @@ namespace SoftwareGL {
 			pos_(pos), to_(to), up_(up) {}
 		const VectorMath::matrix LookAt() const;
 		const VectorMath::vector Direction() const;
+		const VectorMath::vector Position() const;
 
 	protected:
 		VectorMath::vector3 pos_ = { 0, 0, 0 };

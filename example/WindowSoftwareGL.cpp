@@ -88,18 +88,24 @@ bool WindowSoftwareGL::RunCompute()
 		int i0 = i;
 		int i1 = i + 1;
 		int i2 = i + 2;
-		// Compute normal to a triangle (before transform).
+		// Compute normal to a triangle (before transform), and add to w the
+		// vectorial product of normal and the point at the average of the
+		// triangle.
 		VectorMath::vector normal = 
-			[&i0, &i1, &i2, &points, &indices, &rotation] {
+			[&i0, &i1, &i2, &points, &indices, &rotation, this] {
 			VectorMath::vector p0 = points[indices[i0]].GetPosition();
 			VectorMath::vector p1 = points[indices[i1]].GetPosition();
 			VectorMath::vector p2 = points[indices[i2]].GetPosition();
 			p0 = VectorMath::VectorMult(p0, rotation);
 			p1 = VectorMath::VectorMult(p1, rotation);
 			p2 = VectorMath::VectorMult(p2, rotation);
-			return ((p1 - p0) % (p2 - p0)).Normalize();
+			auto average = (p0 + p1 + p2) * (1.f / 3.f);
+			VectorMath::vector normal = ((p1 - p0) % (p2 - p0)).Normalize();
+			normal.w = normal * (average - cam_.Position());
+			return normal;
 		}();
-		if (normal * cam_.Direction() <= 0.0f) {
+		if (normal.w < 0.f) {
+			normal.w = 0.f;
 			// Create a triangle
 			SoftwareGL::Triangle triangle(
 				vertex_[indices[i0]],

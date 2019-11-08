@@ -140,7 +140,7 @@ namespace SoftwareGL {
 				const float z =
 					tri.GetV1().GetZ() * s +
 					tri.GetV2().GetZ() * t +
-					tri.GetV3().GetZ() * (1 - u);
+					tri.GetV3().GetZ() * (1.f - s - t);
 				if (z_buffer[x + y * dx_] > z)
 				{
 					z_buffer[x + y * dx_] = z;
@@ -154,12 +154,18 @@ namespace SoftwareGL {
 						(tri.GetV1().GetColor() * s +
 							tri.GetV2().GetColor() * t +
 							tri.GetV3().GetColor() * (1 - u)) * shade;
-					color = VectorMath::vector(
-						z_buffer[x + y * dx_], 
-						z_buffer[x + y * dx_] / 2, 
-						z_buffer[x + y * dx_] / 4,
-						1);
-					color = -normal;
+					if (0) {
+						static float min = std::numeric_limits<float>::max();
+						static float max = std::numeric_limits<float>::min();
+						min = std::min(min, z);
+						max = std::max(max, z);
+						const float a = max - min;
+						color = VectorMath::vector(
+							(z - min) / a,
+							(z - min) / a,
+							(z - min) / a,
+							1);
+					}
 					const Vertex v(
 						VectorMath::vector4(
 							static_cast<float>(x),
