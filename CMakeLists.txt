@@ -14,13 +14,14 @@ add_library(SoftwareGL STATIC
     ${PROJECT_SOURCE_DIR}/software_gl/Triangle.cpp
     ${PROJECT_SOURCE_DIR}/software_gl/Image.h
     ${PROJECT_SOURCE_DIR}/software_gl/Image.cpp
-    ${PROJECT_SOURCE_DIR}/software_gl/ImageInterface.h
     ${PROJECT_SOURCE_DIR}/software_gl/Vertex.h
     ${PROJECT_SOURCE_DIR}/software_gl/WindowInterface.h
     ${PROJECT_SOURCE_DIR}/software_gl/WindowSDL2GL.cpp
     ${PROJECT_SOURCE_DIR}/software_gl/WindowSDL2GL.h
     ${PROJECT_SOURCE_DIR}/software_gl/VectorMath.h
     ${PROJECT_SOURCE_DIR}/software_gl/VectorMath.cpp
+    ${PROJECT_SOURCE_DIR}/software_gl/Renderer.h
+    ${PROJECT_SOURCE_DIR}/software_gl/Renderer.cpp
 )
 
 target_link_libraries(SoftwareGL PRIVATE

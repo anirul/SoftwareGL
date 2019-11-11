@@ -9,7 +9,8 @@
 bool WindowSoftwareGL::Startup(const std::pair<int, int>& gl_version)
 {
 	glGenTextures(1, &texture_id_);
-	const float aspect = image_.GetWidth() / image_.GetHeight();
+	const float aspect = 
+		renderer_.GetImage().GetWidth() / renderer_.GetImage().GetHeight();
 	// Create a projection matrix with 90 opening angle.
 	projection_ = VectorMath::Projection(
 		90.0f * static_cast<float>(M_PI) / 180.0f,
@@ -18,38 +19,20 @@ bool WindowSoftwareGL::Startup(const std::pair<int, int>& gl_version)
 		1000.0f);
 	look_at_ = cam_.LookAt();
 	look_at_.Inverse();
-	translation_.IdentityMatrix();
-  	translation_.TranslateMatrix(
-  		aspect, 
-  		z_min_, 
-  		z_max_);
-	scale_.IdentityMatrix();
-	scale_.ScaleMatrix(static_cast<float>(height_) / 2);
 	if (!mesh_.LoadFromFile(".\\CubeUVNormal.obj")) assert(false);
 //	if (!mesh_.LoadFromFile(".\\TorusUVNormal.obj")) assert(false);
 //	if (!mesh_.LoadFromFile(".\\Torus.obj")) assert(false);
-	vertex_.resize(mesh_.GetPositions().size());
-	z_buffer_.resize(height_ * width_);
 	return true;
 }
 
 bool WindowSoftwareGL::RunCompute()
 {
 	// Cleanup of buffers.
-	//TODO Should clean to the correct ambient light.
-	std::fill(
-		image_.begin(), 
-		image_.end(),	
-		VectorMath::vector4(.2f, .0f, .2f, 1.f));
-	std::fill(z_buffer_.begin(), z_buffer_.end(), z_max_);
+	renderer_.ClearFrame({ .2f, 0.f, .2f, 1.f }, z_max_);
 	// Timing counter.
 	static auto start = std::chrono::system_clock::now();
 	auto end = std::chrono::system_clock::now();
 	std::chrono::duration<float> time = end - start;
-	// Main vertex loop
-	const auto& points = mesh_.GetPositions();
-	const auto& indices = mesh_.GetIndices();
-	vertex_.assign(points.cbegin(), points.cend());
 	VectorMath::matrix rotation;
 	{
 		VectorMath::matrix r_x;
@@ -78,7 +61,7 @@ bool WindowSoftwareGL::RunCompute()
 				static_cast<float>(height_), 
 				1, 
 				1));
-		image_.DrawTriangle(triangle, z_buffer_);
+		renderer_.DrawTriangle(triangle);
 	}
 	return true;
 }
