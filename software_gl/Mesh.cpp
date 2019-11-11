@@ -12,10 +12,7 @@ namespace SoftwareGL {
 	{
 		std::ifstream ifs;
 		ifs.open(path, std::ifstream::in);
-		if (!ifs.is_open())
-		{
-			return false;
-		}
+		if (!ifs.is_open())	return false;
 		while (!ifs.eof()) {
 			std::string line = "";
 			if (!std::getline(ifs, line)) break;

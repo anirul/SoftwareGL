@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include "VectorMath.h"
 #include "Vertex.h"
 #include "Triangle.h"
@@ -14,6 +15,9 @@ namespace SoftwareGL {
 			dx_(dx), 
 			dy_(dy), 
 			std::vector<VectorMath::vector>(dx * dy, {.2f, .0f, .2f, 1.0f}) {}
+
+	public:
+		bool LoadTGA(const std::string& path);
 
 	public:
 		const std::pair<size_t, size_t> GetSize() const 
