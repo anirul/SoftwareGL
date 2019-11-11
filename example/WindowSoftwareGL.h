@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../software_gl/ImageInterface.h"
 #include "../software_gl/WindowInterface.h"
 #include "../software_gl/VectorMath.h"
 #include "../software_gl/Image.h"
