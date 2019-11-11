@@ -22,27 +22,23 @@ namespace SoftwareGL {
 		}
 		void DrawPixel(
 			const Vertex& v,
-			std::vector<float>& z_buffer = std::vector<float>());
+			std::vector<float>& z_buffer);
 		void DrawLine(
 			const Vertex& v1, 
 			const Vertex& v2, 
-			const VectorMath::vector& normal = { 0, 0, 0, 0 },
-			std::vector<float>& z_buffer = std::vector<float>());
+			std::vector<float>& z_buffer);
 		void DrawTriangle(
 			const Triangle& tri, 
-			const VectorMath::vector& normal = { 0, 0, 0, 0 },
-			std::vector<float>& z_buffer = std::vector<float>());
+			std::vector<float>& z_buffer);
 		const float GetWidth() const { return static_cast<float>(dx_); }
 		const float GetHeight() const { return static_cast<float>(dy_); }
 
 	protected:
 		void DrawTriangleBarycentric(
 			const Triangle& tri,
-			const VectorMath::vector& normal,
 			std::vector<float>& z_buffer);
 		void DrawTriangleScanLine(
 			const Triangle& tri,
-			const VectorMath::vector& normal,
 			std::vector<float>& z_buffer);
 
 	private:

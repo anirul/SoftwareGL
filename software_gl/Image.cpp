@@ -13,12 +13,12 @@ namespace SoftwareGL {
 		if (v.GetX() > (dx_ - 1)) return;
 		if (v.GetY() < 0) return;
 		if (v.GetY() > (dy_ - 1)) return;
-		if (z_buffer.size() != 0) 
+		const size_t index =
+			static_cast<size_t>(v.GetX()) +
+			static_cast<size_t>(v.GetY())* dx_;
+		assert(index < z_buffer.size());
+		if (z_buffer.size() != 0)
 		{
-			const size_t index =
-				static_cast<size_t>(v.GetX()) +
-				static_cast<size_t>(v.GetY()) * dx_;
-			assert(index < z_buffer.size());
 			if (z_buffer[index] <= v.GetZ())
 			{
 				return;
@@ -26,16 +26,12 @@ namespace SoftwareGL {
 			z_buffer[index] = v.GetZ();
 		}
 		// Draw the pixel
-		operator[](
-			static_cast<int>(v.GetX()) +
-			static_cast<int>(v.GetY()) * dx_) =
-			v.GetColor();
+		operator[](index) = v.GetColor();
 	}
 
 	void Image::DrawLine(
 		const Vertex& v1, 
 		const Vertex& v2, 
-		const VectorMath::vector& normal,
 		std::vector<float>& z_buffer)
 	{
 		// Sign operation.
@@ -118,11 +114,10 @@ namespace SoftwareGL {
 
 	void Image::DrawTriangle(
 		const Triangle& tri,
-		const VectorMath::vector& normal,
 		std::vector<float>& z_buffer)
 	{
-		DrawTriangleBarycentric(tri, normal, z_buffer);
-		// DrawTriangleScanLine(tri, normal, z_buffer);
+		DrawTriangleBarycentric(tri, z_buffer);
+		// DrawTriangleScanLine(tri, z_buffer);
 	}
 
 	// Draw triangle using barycentric coordinate.
@@ -130,7 +125,6 @@ namespace SoftwareGL {
 	// Also doesn't account for triangle order, and no Z-buffer yet.
 	void Image::DrawTriangleBarycentric(
 		const Triangle& tri,
-		const VectorMath::vector& normal,
 		std::vector<float>& z_buffer)
 	{
 		static const VectorMath::vector4 light = {0, 0, -1, 0};
@@ -162,7 +156,14 @@ namespace SoftwareGL {
 					tri.GetV3().GetZ() * u;
 				// Interpolate color using s & t.
 				float shade = 1.0f;
-				if (normal.LengthSquared() != 0.0f) {
+				if ((tri.GetV1().GetNormal().LengthSquared() != 0.0f) &&
+					(tri.GetV2().GetNormal().LengthSquared() != 0.0f) &&
+					(tri.GetV3().GetNormal().LengthSquared()))
+				{
+					VectorMath::vector4 normal =
+						tri.GetV1().GetNormal() * s +
+						tri.GetV2().GetNormal() * t +
+						tri.GetV3().GetNormal() * u;
 					shade = normal * light;
 				}
 				VectorMath::vector4 color;
@@ -184,7 +185,6 @@ namespace SoftwareGL {
 
 	void Image::DrawTriangleScanLine(
 		const Triangle& tri,
-		const VectorMath::vector& normal,
 		std::vector<float>& z_buffer)
 	{
 		VectorMath::vector4 border = tri.GetBorder();
@@ -216,7 +216,7 @@ namespace SoftwareGL {
 					tri.GetV1().GetColor() * s2 +
 					tri.GetV2().GetColor() * t2 +
 					tri.GetV3().GetColor() * u2);
-				DrawLine(l1, l2);
+				DrawLine(l1, l2, z_buffer);
 			}
 		}
 	}

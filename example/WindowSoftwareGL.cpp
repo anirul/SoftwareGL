@@ -25,8 +25,9 @@ bool WindowSoftwareGL::Startup(const std::pair<int, int>& gl_version)
   		z_max_);
 	scale_.IdentityMatrix();
 	scale_.ScaleMatrix(static_cast<float>(height_) / 2);
-	if (!mesh_.LoadFromFile(".\\Cube.obj")) assert(false);
-	vertex_.resize(mesh_.GetPoints().size());
+	if (!mesh_.LoadFromFile(".\\TorusUVNormal.obj")) assert(false);
+//	if (!mesh_.LoadFromFile(".\\Torus.obj")) assert(false);
+	vertex_.resize(mesh_.GetPositions().size());
 	z_buffer_.resize(height_ * width_);
 	return true;
 }
@@ -45,7 +46,7 @@ bool WindowSoftwareGL::RunCompute()
 	auto end = std::chrono::system_clock::now();
 	std::chrono::duration<float> time = end - start;
 	// Main vertex loop
-	const auto& points = mesh_.GetPoints();
+	const auto& points = mesh_.GetPositions();
 	const auto& indices = mesh_.GetIndices();
 	vertex_.assign(points.cbegin(), points.cend());
 	VectorMath::matrix rotation;
@@ -58,61 +59,25 @@ bool WindowSoftwareGL::RunCompute()
 		r_z.RotateZMatrix(time.count());
 		rotation = r_x * r_y * r_z;
 	}
-	// Do the transformations.
-	std::for_each(
-		vertex_.begin(), 
-		vertex_.end(), 
-		[this, rotation](SoftwareGL::Vertex& vertex) {
-		vertex.SetPosition(
-			VectorMath::VectorMult(vertex.GetPosition(), rotation));
-		vertex.SetPosition(
-			VectorMath::VectorMult(vertex.GetPosition(), look_at_));
-		vertex.SetPosition(
-			VectorMath::VectorMult(vertex.GetPosition(), projection_));
-		if (vertex.GetW() != 0.0f) 
-		{
-			vertex.SetPosition(VectorMath::vector(
-				vertex.GetX() / vertex.GetW(),
-				vertex.GetY() / vertex.GetW(),
-				vertex.GetZ() / vertex.GetW()));
-		}
-		vertex.SetPosition((vertex.GetPosition() + 1.f) * .5f);
-		vertex.SetPosition(VectorMath::vector(
-			vertex.GetX() * width_,
-			vertex.GetY() * height_,
-			vertex.GetZ(),
-			vertex.GetW()));
-	});
-	for (int i = 0; i < indices.size(); i += 3)
+	// Compute for every triangle.
+	for (const SoftwareGL::Triangle& triangle_in : mesh_)
 	{
-		int i0 = i;
-		int i1 = i + 1;
-		int i2 = i + 2;
-		// Compute normal to a triangle (before transform), and add to w the
-		// vectorial product of normal and the point at the average of the
-		// triangle.
-		VectorMath::vector normal = 
-			[&i0, &i1, &i2, &points, &indices, &rotation, this] {
-			VectorMath::vector p0 = points[indices[i0]].GetPosition();
-			VectorMath::vector p1 = points[indices[i1]].GetPosition();
-			VectorMath::vector p2 = points[indices[i2]].GetPosition();
-			p0 = VectorMath::VectorMult(p0, rotation);
-			p1 = VectorMath::VectorMult(p1, rotation);
-			p2 = VectorMath::VectorMult(p2, rotation);
-			auto average = (p0 + p1 + p2) * (1.f / 3.f);
-			VectorMath::vector normal = ((p1 - p0) % (p2 - p0)).Normalize();
-			normal.w = normal * (average - cam_.Position());
-			return normal;
-		}();
-		if (normal.w < 0.f) {
-			normal.w = 0.f;
-			// Create a triangle
-			SoftwareGL::Triangle triangle(
-				vertex_[indices[i0]],
-				vertex_[indices[i1]],
-				vertex_[indices[i2]]);
-			image_.DrawTriangle(triangle, normal, z_buffer_);
-		}
+		// Create a triangle
+		SoftwareGL::Triangle triangle(triangle_in);
+		triangle = triangle.MatrixMult(rotation);
+		triangle.NormalFixed(true);
+		triangle = triangle.MatrixMult(look_at_);
+		triangle = triangle.MatrixMult(projection_);
+		triangle = triangle.AllPositionDivideByW();
+		triangle = triangle.AllPositionAdd(1.0f);
+		triangle = triangle.AllPositionMult(0.5f);
+		triangle = triangle.AllPositionMult(
+			VectorMath::vector(
+				static_cast<float>(width_), 
+				static_cast<float>(height_), 
+				1, 
+				1));
+		image_.DrawTriangle(triangle, z_buffer_);
 	}
 	return true;
 }

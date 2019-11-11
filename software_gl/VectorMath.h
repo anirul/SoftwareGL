@@ -1758,4 +1758,44 @@ namespace VectorMath {
 		return *this;
 	}
 
+	// Comparaison operator (for now == and !=)
+	inline bool operator==(const vector& v1, const vector& v2)
+	{
+		if (fabsf(v1.x - v2.x) > epsilon) return false;
+		if (fabsf(v1.y - v2.y) > epsilon) return false;
+		if (fabsf(v1.z - v2.z) > epsilon) return false;
+		if (fabsf(v1.w - v2.w) > epsilon) return false;
+		return true;
+	}
+
+	inline bool operator!=(const vector& v1, const vector& v2) 
+	{
+		return !operator==(v1, v2);
+	}
+
+	inline bool operator==(const vector3& v1, const vector3& v2)
+	{
+		if (fabsf(v1.x - v2.x) > epsilon) return false;
+		if (fabsf(v1.y - v2.y) > epsilon) return false;
+		if (fabsf(v1.z - v2.z) > epsilon) return false;
+		return true;
+	}
+
+	inline bool operator!=(const vector3& v1, const vector3& v2)
+	{
+		return !operator==(v1, v2);
+	}
+
+	inline bool operator==(const vector2& v1, const vector2& v2)
+	{
+		if (fabsf(v1.x - v2.x) > epsilon) return false;
+		if (fabsf(v1.y - v2.y) > epsilon) return false;
+		return true;
+	}
+
+	inline bool operator!=(const vector2& v1, const vector2& v2)
+	{
+		return !operator==(v1, v2);
+	}
+
 } // end namespace VectorMath
