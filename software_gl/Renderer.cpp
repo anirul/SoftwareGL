@@ -23,9 +23,10 @@ namespace SoftwareGL {
 		if (v.GetX() > (image_.GetWidth() - 1)) return;
 		if (v.GetY() < 0) return;
 		if (v.GetY() > (image_.GetHeight() - 1)) return;
-		const size_t index =
+		const size_t index  =
 			static_cast<size_t>(v.GetX()) +
-			static_cast<size_t>(v.GetY())* image_.GetWidth();
+			static_cast<size_t>(v.GetY()) * 
+			static_cast<size_t>(image_.GetWidth());
 		assert(index < z_buffer_.size());
 		if (z_buffer_.size() != 0)
 		{
@@ -158,30 +159,40 @@ namespace SoftwareGL {
 						tri.GetV2().GetNormal()).LengthSquared()) < epsilon &&
 					abs((tri.GetV1().GetNormal() -
 						tri.GetV2().GetNormal()).LengthSquared()) < epsilon;
+				VectorMath::vector4 normal;
 				if (are_normal_different)
 				{
-					VectorMath::vector4 normal =
+					normal =
 						tri.GetV1().GetNormal() * s +
 						tri.GetV2().GetNormal() * t +
 						tri.GetV3().GetNormal() * u;
-					shade = normal * light;
 				}
 				else
 				{
-					shade = tri.GetV1().GetNormal() * light;
+					normal = tri.GetV1().GetNormal();
 				}
-				VectorMath::vector4 color;
-				color =
+				shade = normal * light;
+				VectorMath::vector4 color =
 					(tri.GetV1().GetColor() * s +
 						tri.GetV2().GetColor() * t +
 						tri.GetV3().GetColor() * u) * shade;
+				VectorMath::vector2 uv = {
+					tri.GetV1().GetTexture().x * s +
+					tri.GetV2().GetTexture().x * t +
+					tri.GetV3().GetTexture().x * u,
+					tri.GetV1().GetTexture().y * s +
+					tri.GetV2().GetTexture().y * t +
+					tri.GetV3().GetTexture().y * u
+				};
 				const Vertex v(
 					VectorMath::vector4(
 						static_cast<float>(x),
 						static_cast<float>(y),
 						z,
 						1),
-					color);
+					color,
+					normal,
+					uv);
 				DrawPixel(v);
 			}
 		}

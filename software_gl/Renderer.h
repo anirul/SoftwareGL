@@ -2,6 +2,11 @@
 
 #include "Image.h"
 #include <memory>
+#include "Camera.h"
+#include "Mesh.h"
+#include "Triangle.h"
+#include "VectorMath.h"
+#include "Vertex.h"
 
 namespace SoftwareGL {
 
@@ -18,6 +23,7 @@ namespace SoftwareGL {
 
 	private:
 		std::vector<float> z_buffer_;
+		std::vector<Mesh> meshes_;
 		Image image_;
 	};
 
