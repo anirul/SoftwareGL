@@ -23,12 +23,7 @@ namespace SoftwareGL {
 			normal_(normal),
 			texture_(texture) {}
 		Vertex(const Vertex&) = default;
-		Vertex& operator=(const Vertex& v) 
-		{
-			position_ = v.position_;
-			color_ = v.color_;
-			return *this;
-		}
+		Vertex& operator=(const Vertex& v) = default;
 
 	public:
 		// Basic accessors.
@@ -51,7 +46,7 @@ namespace SoftwareGL {
 
 	protected:
 		VectorMath::vector4 position_ = { 0, 0, 0, 1 };
-		VectorMath::vector4 color_ = { 1, 0, 0, 1 };
+		VectorMath::vector4 color_ = { .5, .5, .5, 1 };
 		VectorMath::vector4 normal_ = { 0, 0, 0, 0 };
 		VectorMath::vector2 texture_ = { 0, 0 };
 	};

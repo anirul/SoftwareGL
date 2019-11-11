@@ -166,7 +166,6 @@ namespace SoftwareGL {
 		den_ = 1.f / ((v2_.GetY() - v3_.GetY()) *
 			(v1_.GetX() - v3_.GetX()) + (v3_.GetX() - v2_.GetX()) *
 			(v1_.GetY() - v3_.GetY()));
-		// Could't get the constexpr version of min and max to work.
 		border_ = VectorMath::vector(
 			(v1_.GetX() < v2_.GetX()) ?
 			((v1_.GetX() < v3_.GetX()) ? v1_.GetX() : v3_.GetX()) :
@@ -180,9 +179,24 @@ namespace SoftwareGL {
 			(v1_.GetY() > v2_.GetY()) ?
 			((v1_.GetY() > v3_.GetY()) ? v1_.GetY() : v3_.GetY()) :
 			((v2_.GetY() > v3_.GetY()) ? v2_.GetY() : v3_.GetY()));
+		// Check if there is any normals.
+		if ((!v1_.GetNormal().LengthSquared()) ||
+			(!v2_.GetNormal().LengthSquared()) ||
+			(!v3_.GetNormal().LengthSquared()))
+		{
+			// Compute normal as a perpendicular to the surface.
+			VectorMath::vector normal =
+				((v2_.GetPosition() - v1_.GetPosition()) %
+				(v3_.GetPosition() - v1_.GetPosition())).Normalize();
+			v1_.SetNormal(normal);
+			v2_.SetNormal(normal);
+			v3_.SetNormal(normal);
+		}
+
 	}
 
-	Triangle Triangle::MatrixMult(const VectorMath::matrix& matrix) const
+	Triangle Triangle::AllPositionMatrixMult(
+		const VectorMath::matrix& matrix) const
 	{
 		Triangle out = *this;
 		out.v1_.SetPosition(
@@ -191,10 +205,13 @@ namespace SoftwareGL {
 			VectorMath::VectorMult(out.GetV2().GetPosition(), matrix));
 		out.v3_.SetPosition(
 			VectorMath::VectorMult(out.GetV3().GetPosition(), matrix));
-		if (is_normal_fixed_)
-		{
-			return out;
-		}
+		return out;
+	}
+
+	Triangle Triangle::AllNormalMatrixMult(
+		const VectorMath::matrix& matrix) const
+	{
+		Triangle out = *this;
 		out.v1_.SetNormal(
 			VectorMath::VectorMult(out.GetV1().GetNormal(), matrix));
 		out.v2_.SetNormal(
@@ -202,27 +219,6 @@ namespace SoftwareGL {
 		out.v3_.SetNormal(
 			VectorMath::VectorMult(out.GetV3().GetNormal(), matrix));
 		return out;
-	}
-
-	void Triangle::NormalFixed(bool is_fixed)
-	{
-		is_normal_fixed_ = is_fixed;
-		// Check if set to true.
-		if (is_normal_fixed_) {
-			// Check if there is not any normals.
-			if ((!v1_.GetNormal().LengthSquared()) ||
-				(!v2_.GetNormal().LengthSquared()) ||
-				(!v3_.GetNormal().LengthSquared()))
-			{
-				// Compute normal as a perpendicular to the surface.
-				VectorMath::vector normal = 
-					((v2_.GetPosition() - v1_.GetPosition()) % 
-					(v3_.GetPosition() - v1_.GetPosition())).Normalize();
-				v1_.SetNormal(normal);
-				v2_.SetNormal(normal);
-				v3_.SetNormal(normal);
-			}
-		}
 	}
 
 }	// End namespace SoftwareGL.

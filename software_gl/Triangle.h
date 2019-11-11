@@ -31,11 +31,6 @@ namespace SoftwareGL {
 	public:
 		std::vector<VectorMath::vector2> IntersectWithinBorder(
 			const VectorMath::vector4& l) const;
-		// Mutliply a triangle with a matrix (do this for all vectors).
-		Triangle MatrixMult(const VectorMath::matrix& matrix) const;
-		// Fix the normals (can be done at any moment).
-		void NormalFixed(bool is_fixed);
-		bool IsNormalFixed() const { return is_normal_fixed_; }
 		// Setter and getter for vertices.
 		const Vertex GetV1() const { return v1_; }
 		const Vertex GetV2() const { return v2_; }
@@ -57,7 +52,12 @@ namespace SoftwareGL {
 		}
 
 	public:
+		// Mutliply a triangle with a matrix (do this for all vectors).
+		Triangle AllPositionMatrixMult(const VectorMath::matrix& matrix) const;
+		Triangle AllNormalMatrixMult(const VectorMath::matrix& matrix) const;
+		// Renormalizing.
 		Triangle AllPositionDivideByW() const;
+		// Function to change all positions.
 		Triangle AllPositionAdd(const float f) const;
 		Triangle AllPositionMult(const float f) const;
 		Triangle AllPositionMult(const VectorMath::vector4& v) const;
@@ -77,8 +77,6 @@ namespace SoftwareGL {
 		// Some constants that are fixed for barycentric calculations.
 		float area_;
 		float den_;
-		// Is normal fixed yet?
-		bool is_normal_fixed_ = false;
 		// Could't get the constexpr version of min and max to work.
 		VectorMath::vector4 border_;
 	};

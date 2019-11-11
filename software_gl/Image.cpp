@@ -156,15 +156,22 @@ namespace SoftwareGL {
 					tri.GetV3().GetZ() * u;
 				// Interpolate color using s & t.
 				float shade = 1.0f;
-				if ((tri.GetV1().GetNormal().LengthSquared() != 0.0f) &&
-					(tri.GetV2().GetNormal().LengthSquared() != 0.0f) &&
-					(tri.GetV3().GetNormal().LengthSquared()))
+				const bool are_normal_different =
+					abs((tri.GetV1().GetNormal() - 
+						tri.GetV2().GetNormal()).LengthSquared()) < epsilon &&
+					abs((tri.GetV1().GetNormal() - 
+						tri.GetV2().GetNormal()).LengthSquared()) < epsilon;
+				if (are_normal_different)
 				{
 					VectorMath::vector4 normal =
 						tri.GetV1().GetNormal() * s +
 						tri.GetV2().GetNormal() * t +
 						tri.GetV3().GetNormal() * u;
 					shade = normal * light;
+				}
+				else
+				{
+					shade = tri.GetV1().GetNormal() * light;
 				}
 				VectorMath::vector4 color;
 				color =

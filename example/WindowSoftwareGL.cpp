@@ -25,7 +25,8 @@ bool WindowSoftwareGL::Startup(const std::pair<int, int>& gl_version)
   		z_max_);
 	scale_.IdentityMatrix();
 	scale_.ScaleMatrix(static_cast<float>(height_) / 2);
-	if (!mesh_.LoadFromFile(".\\TorusUVNormal.obj")) assert(false);
+	if (!mesh_.LoadFromFile(".\\CubeUVNormal.obj")) assert(false);
+//	if (!mesh_.LoadFromFile(".\\TorusUVNormal.obj")) assert(false);
 //	if (!mesh_.LoadFromFile(".\\Torus.obj")) assert(false);
 	vertex_.resize(mesh_.GetPositions().size());
 	z_buffer_.resize(height_ * width_);
@@ -64,10 +65,10 @@ bool WindowSoftwareGL::RunCompute()
 	{
 		// Create a triangle
 		SoftwareGL::Triangle triangle(triangle_in);
-		triangle = triangle.MatrixMult(rotation);
-		triangle.NormalFixed(true);
-		triangle = triangle.MatrixMult(look_at_);
-		triangle = triangle.MatrixMult(projection_);
+		triangle = triangle.AllPositionMatrixMult(rotation);
+		triangle = triangle.AllNormalMatrixMult(rotation);
+		triangle = triangle.AllPositionMatrixMult(look_at_);
+		triangle = triangle.AllPositionMatrixMult(projection_);
 		triangle = triangle.AllPositionDivideByW();
 		triangle = triangle.AllPositionAdd(1.0f);
 		triangle = triangle.AllPositionMult(0.5f);
