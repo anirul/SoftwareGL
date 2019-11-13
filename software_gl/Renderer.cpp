@@ -158,7 +158,7 @@ namespace SoftwareGL {
 					abs((tri.GetV1().GetNormal() -
 						tri.GetV2().GetNormal()).LengthSquared()) < epsilon &&
 					abs((tri.GetV1().GetNormal() -
-						tri.GetV2().GetNormal()).LengthSquared()) < epsilon;
+						tri.GetV3().GetNormal()).LengthSquared()) < epsilon;
 				VectorMath::vector4 normal;
 				if (are_normal_different)
 				{

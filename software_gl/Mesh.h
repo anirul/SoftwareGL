@@ -11,7 +11,7 @@ namespace SoftwareGL {
 	class Mesh {
 	public:
 		Mesh() {}
-		bool LoadFromFile(const std::string& path);
+		bool LoadFromObj(const std::string& path);
 		const std::vector<VectorMath::vector4>& GetPositions() const;
 		const std::vector<VectorMath::vector4>& GetNormals() const;
 		const std::vector<VectorMath::vector2>& GetTextures() const;

@@ -10,14 +10,16 @@ namespace SoftwareGL {
 
 	class Image : public std::vector<VectorMath::vector> {
 	public:
-		Image() {}
+		Image() = delete;
 		Image(size_t dx, size_t dy) : 
 			dx_(dx), 
 			dy_(dy), 
 			std::vector<VectorMath::vector>(dx * dy, {.2f, .0f, .2f, 1.0f}) {}
+		Image(const Image& image) = default;
+		Image& operator=(const Image& image) = default;
 
 	public:
-		bool LoadTGA(const std::string& path);
+		bool LoadFromTGA(const std::string& path);
 
 	public:
 		const std::pair<size_t, size_t> GetSize() const 
@@ -28,8 +30,8 @@ namespace SoftwareGL {
 		const float GetHeight() const { return static_cast<float>(dy_); }
 
 	private:
-		const size_t dx_ = 0;
-		const size_t dy_ = 0;
+		size_t dx_ = 0;
+		size_t dy_ = 0;
 	};
 
 }	// End of namespace SoftwareGL

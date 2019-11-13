@@ -8,10 +8,6 @@
 
 namespace SoftwareGL {
 
-#ifdef WIN32
-#	pragma pack(4)
-#endif // WIN32
-
 	struct tga_header
 	{
 		uint8_t length;
@@ -30,7 +26,7 @@ namespace SoftwareGL {
 		uint8_t image_descriptor;
 	};
 
-	bool Image::LoadTGA(const std::string& path)
+	bool Image::LoadFromTGA(const std::string& path)
 	{
 		std::ifstream ifs(path, std::ios::binary);
 		if (!ifs.is_open()) return false;
@@ -55,6 +51,9 @@ namespace SoftwareGL {
 		ifs.read((char*)&header.image_descriptor, sizeof(uint8_t));
 		// Resize the buffer.
 		resize(header.width * header.height);
+		dx_ = header.width;
+		dy_ = header.height;
+		// Check the content.
 		switch (header.image_type) 
 		{
 		case 2:
