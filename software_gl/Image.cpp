@@ -16,12 +16,14 @@ namespace SoftwareGL {
 
 		uint16_t color_map_origin;
 		uint16_t color_map_length;
+
 		uint8_t color_map_entry_size;
 
 		uint16_t x_origin;
 		uint16_t y_origin;
 		uint16_t width;
 		uint16_t height;
+
 		uint8_t bits;
 		uint8_t image_descriptor;
 	};
@@ -65,9 +67,9 @@ namespace SoftwareGL {
 					uint8_t r;
 					uint8_t g;
 					uint8_t b;
-					ifs.read((char*)&r, sizeof(uint8_t));
-					ifs.read((char*)&g, sizeof(uint8_t));
 					ifs.read((char*)&b, sizeof(uint8_t));
+					ifs.read((char*)&g, sizeof(uint8_t));
+					ifs.read((char*)&r, sizeof(uint8_t));
 					v.x = static_cast<float>(r) / 255.f;
 					v.y = static_cast<float>(g) / 255.f;
 					v.z = static_cast<float>(b) / 255.f;
@@ -82,9 +84,10 @@ namespace SoftwareGL {
 					uint8_t g;
 					uint8_t b;
 					uint8_t a;
-					ifs.read((char*)&r, sizeof(uint8_t));
-					ifs.read((char*)&g, sizeof(uint8_t));
+					// CHECKME: not sure of the order.
 					ifs.read((char*)&b, sizeof(uint8_t));
+					ifs.read((char*)&g, sizeof(uint8_t));
+					ifs.read((char*)&r, sizeof(uint8_t));
 					ifs.read((char*)&a, sizeof(uint8_t));
 					v.x = static_cast<float>(r) / 255.f;
 					v.y = static_cast<float>(g) / 255.f;

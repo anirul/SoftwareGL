@@ -28,4 +28,4 @@ namespace SoftwareGL {
 		unsigned int texture_id_;
 	};
 
-}	// End of namespace SoftwareGL
+}	// End of namespace SoftwareGL.

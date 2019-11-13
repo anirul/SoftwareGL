@@ -51,4 +51,4 @@ namespace SoftwareGL {
 		VectorMath::vector2 texture_ = { 0, 0 };
 	};
 
-}	// End of namespace SoftwareGL
+}	// End of namespace SoftwareGL.

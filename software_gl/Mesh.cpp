@@ -4,7 +4,10 @@
 #include <array>
 #include <fstream>
 #include <sstream>
+#include <execution>
 #include <assert.h>
+
+#include "VectorMath.h"
 
 namespace SoftwareGL {
 
@@ -114,6 +117,80 @@ namespace SoftwareGL {
 	const std::vector<std::array<int, 3>>& Mesh::GetIndices() const
 	{
 		return indices_;
+	}
+
+	void Mesh::AllPositionMatrixMult(const VectorMath::matrix& matrix)
+	{
+		std::for_each(
+			std::execution::par,
+			positions_.begin(), 
+			positions_.end(), 
+			[&matrix](VectorMath::vector4& vec) 
+		{
+			vec = VectorMath::VectorMult(vec, matrix);
+		});
+	}
+
+	void Mesh::AllNormalMatrixMult(const VectorMath::matrix& matrix)
+	{
+		std::for_each(
+			std::execution::par,
+			normals_.begin(),
+			normals_.end(),
+			[&matrix](VectorMath::vector4& vec)
+		{
+			vec = VectorMath::VectorMult(vec, matrix);
+		});
+	}
+
+	void Mesh::AllPositionDivideByW()
+	{
+		std::for_each(
+			std::execution::par,
+			positions_.begin(),
+			positions_.end(),
+			[](VectorMath::vector4& vec)
+		{
+			vec.x /= vec.w;
+			vec.y /= vec.w;
+			vec.z /= vec.w;
+		});
+	}
+
+	void Mesh::AllPositionAdd(const float f)
+	{
+		std::for_each(
+			std::execution::par,
+			positions_.begin(),
+			positions_.end(),
+			[&f](VectorMath::vector4& vec)
+		{
+			vec += f;
+		});
+	}
+
+	void Mesh::AllPositionMult(const float f)
+	{
+		std::for_each(
+			std::execution::par,
+			positions_.begin(),
+			positions_.end(),
+			[&f](VectorMath::vector4& vec)
+		{
+			vec *= f;
+		});
+	}
+
+	void Mesh::AllPositionMult(const VectorMath::vector4& v)
+	{
+		std::for_each(
+			std::execution::par,
+			positions_.begin(),
+			positions_.end(),
+			[&v](VectorMath::vector4& vec)
+		{
+			vec |= v;
+		});
 	}
 
 	Mesh::ConstIterator::ConstIterator(int position, const Mesh& mesh) :

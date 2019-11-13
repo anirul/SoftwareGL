@@ -477,6 +477,22 @@ namespace VectorMath {
 			assert((0<=i) && (i<=1));
 			return *(((float *)&vec) + i);
 		}
+
+		// Operators and member functions:
+
+		friend vector2 operator * (const vector2&, const float);
+		friend vector2 operator * (const float, const vector2&);
+		// Elements Product
+		friend vector2 operator | (const vector2&, const vector2&);
+		friend vector2 operator + (const vector2&);
+		friend vector2 operator + (const vector2&, const vector2&);
+		friend vector2 operator - (const vector2&);
+		friend vector2 operator - (const vector2&, const vector2&);
+
+		vector2& operator *= (const float);
+		vector2& operator |= (const vector2&);
+		vector2& operator += (const vector2&);
+		vector2& operator -= (const vector2&);
 	};
 
 #ifdef ENABLE_VEC
@@ -1758,6 +1774,88 @@ namespace VectorMath {
 		return *this;
 	}
 
+	inline vector2 operator * (const vector2& v, const float f)
+	{
+		vector2 res = v;
+		res.x *= f;
+		res.y *= f;
+		return res;
+	}
+
+	inline vector2 operator * (const float f, const vector2& v)
+	{
+		vector2 res = v;
+		res.x *= f;
+		res.y *= f;
+		return res;
+	}
+
+	inline vector2 operator | (const vector2& v1, const vector2& v2)
+	{
+		vector2 res;
+		res.x = v1.x * v2.x;
+		res.y = v1.y * v2.y;
+		return res;
+	}
+
+	inline vector2 operator + (const vector2& v)
+	{
+		vector2 res = v;
+		return res;
+	}
+
+	inline vector2 operator + (const vector2& v1, const vector2& v2)
+	{
+		vector2 res;
+		res.x = v1.x + v2.x;
+		res.y = v1.y + v2.y;
+		return res;
+	}
+
+	inline vector2 operator - (const vector2& v)
+	{
+		vector2 res;
+		res.x = -v.x;
+		res.y = -v.y;
+		return res;
+	}
+
+	inline vector2 operator - (const vector2& v1, const vector2& v2)
+	{
+		vector2 res;
+		res.x = v1.x - v2.x;
+		res.y = v1.y - v2.y;
+		return res;
+	}
+
+	inline vector2& vector2::operator *= (const float f)
+	{
+		x *= f;
+		y *= f;
+		return *this;
+	}
+
+	inline vector2& vector2::operator |= (const vector2& v)
+	{
+		x *= v.x;
+		y *= v.y;
+		return *this;
+	}
+
+	inline vector2& vector2::operator += (const vector2& v)
+	{
+		x += v.x;
+		y += v.y;
+		return *this;
+	}
+
+	inline vector2& vector2::operator -= (const vector2& v)
+	{
+		x -= v.x;
+		y -= v.y;
+		return *this;
+	}
+
 	// Comparaison operator (for now == and !=)
 	inline bool operator==(const vector& v1, const vector& v2)
 	{
@@ -1798,4 +1896,4 @@ namespace VectorMath {
 		return !operator==(v1, v2);
 	}
 
-} // end namespace VectorMath
+} // end namespace VectorMath.

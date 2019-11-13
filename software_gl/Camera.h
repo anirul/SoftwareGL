@@ -21,4 +21,4 @@ namespace SoftwareGL {
 		VectorMath::vector3 up_ = { 0, 1, 0 };
 	};
 
-}	// End namespace SoftwareGL
+}	// End namespace SoftwareGL.

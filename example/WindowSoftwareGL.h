@@ -11,7 +11,7 @@ class WindowSoftwareGL : public SoftwareGL::WindowInterface
 {
 public:
 	WindowSoftwareGL(size_t width, size_t height) : 
-		cam_({ 0, 0, -5 }, { 0, 0, -1 }, { 0, 1, 0 }),
+		cam_({ 0, 0, -4 }, { 0, 0, -1 }, { 0, 1, 0 }),
 		width_(width), 
 		height_(height), 
 		renderer_(SoftwareGL::Image(width, height)) {}
@@ -33,7 +33,6 @@ protected:
 	SoftwareGL::Renderer renderer_;
 	size_t width_ = 640;
 	size_t height_ = 480;
-	unsigned int texture_id_ = 0;
 	float z_min_ = 0.1f;
 	float z_max_ = 10000.0f;
 };

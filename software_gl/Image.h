@@ -34,4 +34,4 @@ namespace SoftwareGL {
 		size_t dy_ = 0;
 	};
 
-}	// End of namespace SoftwareGL
+}	// End of namespace SoftwareGL.

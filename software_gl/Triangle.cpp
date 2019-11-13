@@ -67,63 +67,6 @@ namespace SoftwareGL {
 		return points;
 	}
 
-	Triangle Triangle::AllPositionDivideByW() const
-	{
-		Triangle out = *this;
-		auto v1 = v1_.GetPosition();
-		if (v1.w) 
-		{
-			v1.x /= v1.w;
-			v1.y /= v1.w;
-			v1.z /= v1.w;
-			out.v1_.SetPosition(v1);
-		}
-		auto v2 = v2_.GetPosition();
-		if (v2.w)
-		{
-			v2.x /= v2.w;
-			v2.y /= v2.w;
-			v2.z /= v2.w;
-			out.v2_.SetPosition(v2);
-		}
-		auto v3 = v3_.GetPosition();
-		if (v3.w)
-		{
-			v3.x /= v3.w;
-			v3.y /= v3.w;
-			v3.z /= v3.w;
-			out.v3_.SetPosition(v3);
-		}
-		return out;
-	}
-
-	Triangle Triangle::AllPositionAdd(const float f) const
-	{
-		auto out = *this;
-		out.v1_.SetPosition(v1_.GetPosition() + f);
-		out.v2_.SetPosition(v2_.GetPosition() + f);
-		out.v3_.SetPosition(v3_.GetPosition() + f);
-		return out;
-	}
-
-	Triangle Triangle::AllPositionMult(const float f) const
-	{
-		auto out = *this;
-		out.v1_.SetPosition(v1_.GetPosition() * f);
-		out.v2_.SetPosition(v2_.GetPosition() * f);
-		out.v3_.SetPosition(v3_.GetPosition() * f);
-		return out;
-	}
-
-	Triangle Triangle::AllPositionMult(const VectorMath::vector4& v) const
-	{
-		auto out = *this;
-		out.v1_.SetPosition(v1_.GetPosition() | v);
-		out.v2_.SetPosition(v2_.GetPosition() | v);
-		out.v3_.SetPosition(v3_.GetPosition() | v);
-		return out;
-	}
-
 	const VectorMath::vector2 Triangle::IntersectionLineLine(
 		const VectorMath::vector4& l1, 
 		const VectorMath::vector4& l2) const
@@ -193,32 +136,6 @@ namespace SoftwareGL {
 			v3_.SetNormal(normal);
 		}
 
-	}
-
-	Triangle Triangle::AllPositionMatrixMult(
-		const VectorMath::matrix& matrix) const
-	{
-		Triangle out = *this;
-		out.v1_.SetPosition(
-			VectorMath::VectorMult(out.GetV1().GetPosition(), matrix));
-		out.v2_.SetPosition(
-			VectorMath::VectorMult(out.GetV2().GetPosition(), matrix));
-		out.v3_.SetPosition(
-			VectorMath::VectorMult(out.GetV3().GetPosition(), matrix));
-		return out;
-	}
-
-	Triangle Triangle::AllNormalMatrixMult(
-		const VectorMath::matrix& matrix) const
-	{
-		Triangle out = *this;
-		out.v1_.SetNormal(
-			VectorMath::VectorMult(out.GetV1().GetNormal(), matrix));
-		out.v2_.SetNormal(
-			VectorMath::VectorMult(out.GetV2().GetNormal(), matrix));
-		out.v3_.SetNormal(
-			VectorMath::VectorMult(out.GetV3().GetNormal(), matrix));
-		return out;
 	}
 
 }	// End namespace SoftwareGL.

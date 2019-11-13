@@ -111,6 +111,8 @@ namespace SoftwareGL {
 		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value1);
 		int value2;
 		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value2);
+		// Generate texture id.
+		glGenTextures(1, &texture_id_);
 		// While Run return true continue.
 		if (window_interface_->Startup({ value1, value2 })) {
 			bool loop = true;

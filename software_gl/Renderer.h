@@ -20,7 +20,7 @@ namespace SoftwareGL {
 		void DrawLine(const Vertex& v1, const Vertex& v2);
 		void DrawTriangle(const Triangle& tri);
 		const Image& GetImage() const { return image_; }
-		void SetTexture(const Image& image) { image_ = image; }
+		void SetTexture(const Image& texture) { texture_ = texture; }
 
 	private:
 		Image texture_;

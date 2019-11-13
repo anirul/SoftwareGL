@@ -50,18 +50,7 @@ namespace SoftwareGL {
 			v3_ = v;
 			SetVertexConst();
 		}
-
-	public:
-		// Mutliply a triangle with a matrix (do this for all vectors).
-		Triangle AllPositionMatrixMult(const VectorMath::matrix& matrix) const;
-		Triangle AllNormalMatrixMult(const VectorMath::matrix& matrix) const;
-		// Renormalizing.
-		Triangle AllPositionDivideByW() const;
-		// Function to change all positions.
-		Triangle AllPositionAdd(const float f) const;
-		Triangle AllPositionMult(const float f) const;
-		Triangle AllPositionMult(const VectorMath::vector4& v) const;
-
+	
 	protected:
 		const VectorMath::vector2 IntersectionLineLine(
 			const VectorMath::vector4& l1,
@@ -77,8 +66,7 @@ namespace SoftwareGL {
 		// Some constants that are fixed for barycentric calculations.
 		float area_;
 		float den_;
-		// Could't get the constexpr version of min and max to work.
 		VectorMath::vector4 border_;
 	};
 
-}	// End namespace SoftwareGL
+}	// End namespace SoftwareGL.

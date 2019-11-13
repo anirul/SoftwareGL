@@ -8,19 +8,18 @@
 
 bool WindowSoftwareGL::Startup(const std::pair<int, int>& gl_version)
 {
-	glGenTextures(1, &texture_id_);
 	const float aspect = 
 		renderer_.GetImage().GetWidth() / renderer_.GetImage().GetHeight();
 	// Create a projection matrix with 90 opening angle.
 	projection_ = VectorMath::Projection(
-		90.0f * static_cast<float>(M_PI) / 180.0f,
+		65.0f * static_cast<float>(M_PI) / 180.0f,
 		aspect,
 		0.1f,
 		1000.0f);
 	look_at_ = cam_.LookAt();
 	look_at_.Inverse();
 	if (!mesh_.LoadFromObj(".\\CubeUVNormal.obj")) assert(false);
-	//	if (!mesh_.LoadFromFile(".\\TorusUVNormal.obj")) assert(false);
+	//	if (!mesh_.LoadFromObj(".\\TorusUVNormal.obj")) assert(false);
 	//	if (!mesh_.LoadFromFile(".\\Torus.obj")) assert(false);
 	SoftwareGL::Image texture(1, 1);
 	if (!texture.LoadFromTGA(".\\Texture.tga")) assert(false);
@@ -41,30 +40,30 @@ bool WindowSoftwareGL::RunCompute()
 		VectorMath::matrix r_x;
 		VectorMath::matrix r_y;
 		VectorMath::matrix r_z;
-		r_x.RotateXMatrix(time.count() * 0.3f);
+		r_x.RotateXMatrix(time.count() * 0.7f);
 		r_y.RotateYMatrix(time.count() * 0.5f);
 		r_z.RotateZMatrix(time.count());
 		rotation = r_x * r_y * r_z;
 	}
+	// Make a copy of mesh to make the view transformations.
+	SoftwareGL::Mesh mesh = mesh_;
+	mesh.AllPositionMatrixMult(rotation);
+	mesh.AllNormalMatrixMult(rotation);
+	mesh.AllPositionMatrixMult(look_at_);
+	mesh.AllPositionMatrixMult(projection_);
+	mesh.AllPositionDivideByW();
+	mesh.AllPositionAdd(1.0f);
+	mesh.AllPositionMult(0.5f);
+	mesh.AllPositionMult(
+		VectorMath::vector(
+			static_cast<float>(width_),
+			static_cast<float>(height_),
+			1,
+			1));
 	// Compute for every triangle.
-	for (const SoftwareGL::Triangle& triangle_in : mesh_)
+	for (const SoftwareGL::Triangle& triangle_in : mesh)
 	{
-		// Create a triangle
-		SoftwareGL::Triangle triangle(triangle_in);
-		triangle = triangle.AllPositionMatrixMult(rotation);
-		triangle = triangle.AllNormalMatrixMult(rotation);
-		triangle = triangle.AllPositionMatrixMult(look_at_);
-		triangle = triangle.AllPositionMatrixMult(projection_);
-		triangle = triangle.AllPositionDivideByW();
-		triangle = triangle.AllPositionAdd(1.0f);
-		triangle = triangle.AllPositionMult(0.5f);
-		triangle = triangle.AllPositionMult(
-			VectorMath::vector(
-				static_cast<float>(width_), 
-				static_cast<float>(height_), 
-				1, 
-				1));
-		renderer_.DrawTriangle(triangle);
+		renderer_.DrawTriangle(triangle_in);
 	}
 	return true;
 }
@@ -90,4 +89,3 @@ const std::pair<size_t, size_t> WindowSoftwareGL::GetWindowSize() const
 {
 	return std::make_pair(width_, height_);
 }
-
