@@ -18,8 +18,8 @@ bool WindowSoftwareGL::Startup(const std::pair<int, int>& gl_version)
 		1000.0f);
 	look_at_ = cam_.LookAt();
 	look_at_.Inverse();
-	if (!mesh_.LoadFromObj(".\\CubeUVNormal.obj")) assert(false);
-	//	if (!mesh_.LoadFromObj(".\\TorusUVNormal.obj")) assert(false);
+	//  if (!mesh_.LoadFromObj(".\\CubeUVNormal.obj")) assert(false);
+	if (!mesh_.LoadFromObj(".\\TorusUVNormal.obj")) assert(false);
 	//	if (!mesh_.LoadFromFile(".\\Torus.obj")) assert(false);
 	SoftwareGL::Image texture(1, 1);
 	if (!texture.LoadFromTGA(".\\Texture.tga")) assert(false);
