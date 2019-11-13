@@ -10,12 +10,28 @@ namespace SoftwareGL {
 
 	class Mesh {
 	public:
-		Mesh() {}
-		bool LoadFromFile(const std::string& path);
+		Mesh() = default;
+		Mesh(const Mesh& mesh) = default;
+		Mesh& operator=(const Mesh& mesh) = default;
+
+	public:
+		bool LoadFromObj(const std::string& path);
 		const std::vector<VectorMath::vector4>& GetPositions() const;
 		const std::vector<VectorMath::vector4>& GetNormals() const;
 		const std::vector<VectorMath::vector2>& GetTextures() const;
 		const std::vector<std::array<int, 3>>& GetIndices() const;
+
+	public:
+		// Operation on matrices.
+		// Multiply a triangle with a matrix (do this for all vectors).
+		void AllPositionMatrixMult(const VectorMath::matrix& matrix);
+		void AllNormalMatrixMult(const VectorMath::matrix& matrix);
+		// Re normalizing.
+		void AllPositionDivideByW();
+		// Function to change all positions.
+		void AllPositionAdd(const float f);
+		void AllPositionMult(const float f);
+		void AllPositionMult(const VectorMath::vector4& v);
 
 	public:
 		class ConstIterator {

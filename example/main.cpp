@@ -23,7 +23,7 @@ int main(int ac, char** av)
 #endif
 {
 	SoftwareGL::WindowSDL2GL window(
-		std::make_shared<WindowSoftwareGL>(1280, 720));
+		std::make_shared<WindowSoftwareGL>(640, 480));
 	window.Startup();
 	return 0;
 }

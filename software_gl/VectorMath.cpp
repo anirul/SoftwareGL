@@ -486,4 +486,4 @@ namespace VectorMath {
 		return m;
 	}
 
-} // end of namespace VectorMath
+} // end of namespace VectorMath.

@@ -2,10 +2,16 @@
 #include <algorithm>
 #include <vector>
 #include <tuple>
+#include <execution>
 #include <assert.h>
 #include "Image.h"
 
 namespace SoftwareGL {
+
+	template <typename T>
+	T clip(const T& n, const T& lower, const T& upper) {
+		return std::max(lower, std::min(n, upper));
+	}
 
 	void Renderer::ClearFrame(
 		const VectorMath::vector& color, 
@@ -14,19 +20,37 @@ namespace SoftwareGL {
 		z_buffer_.resize(image_.size());
 		std::fill(image_.begin(), image_.end(), color);
 		std::fill(z_buffer_.begin(), z_buffer_.end(), z_max);
+#ifdef _DEBUG
+		// Draw texture.
+		int count = 0;
+		std::for_each(
+			texture_.begin(), 
+			texture_.end(), 
+			[&count, this](VectorMath::vector vec) 
+		{
+			const int index = 
+				count % static_cast<int>(texture_.GetWidth()) +
+				(count / static_cast<int>(texture_.GetWidth())) * 
+				static_cast<int>(image_.GetWidth());
+			image_[index] = vec;
+			count++;
+		});
+#endif	// _DEBUG
 	}
 
 	void Renderer::DrawPixel(const Vertex& v)
 	{
+		const float width = image_.GetWidth();
+		const float height = image_.GetHeight();
 		// Check boundaries.
 		if (v.GetX() < 0) return;
-		if (v.GetX() > (image_.GetWidth() - 1)) return;
+		if (v.GetX() > (width - 1)) return;
 		if (v.GetY() < 0) return;
-		if (v.GetY() > (image_.GetHeight() - 1)) return;
+		if (v.GetY() > (height - 1)) return;
 		const size_t index  =
 			static_cast<size_t>(v.GetX()) +
 			static_cast<size_t>(v.GetY()) * 
-			static_cast<size_t>(image_.GetWidth());
+			static_cast<size_t>(width);
 		assert(index < z_buffer_.size());
 		if (z_buffer_.size() != 0)
 		{
@@ -36,8 +60,20 @@ namespace SoftwareGL {
 			}
 			z_buffer_[index] = v.GetZ();
 		}
+		VectorMath::vector4 color = v.GetColor();
+		if (texture_.GetWidth() > 1 && texture_.GetHeight() > 1)
+		{
+			const int dx = static_cast<int>(texture_.GetWidth());
+			const int dy = static_cast<int>(texture_.GetHeight());
+			int ut = static_cast<int>(v.GetTexture().x * dx);
+			int vt = static_cast<int>(v.GetTexture().y * dy);
+			ut = clip<int>(ut, 0, dx - 1);
+			vt = clip<int>(vt, 0, dy - 1);
+			const int index = ut + vt * dx;
+			color |= texture_[index];
+		}
 		// Draw the pixel
-		image_[index] = v.GetColor();
+		image_[index] = color;
 	}
 
 	void Renderer::DrawLine(const Vertex& v1, const Vertex& v2)
@@ -158,7 +194,7 @@ namespace SoftwareGL {
 					abs((tri.GetV1().GetNormal() -
 						tri.GetV2().GetNormal()).LengthSquared()) < epsilon &&
 					abs((tri.GetV1().GetNormal() -
-						tri.GetV2().GetNormal()).LengthSquared()) < epsilon;
+						tri.GetV3().GetNormal()).LengthSquared()) < epsilon;
 				VectorMath::vector4 normal;
 				if (are_normal_different)
 				{
@@ -173,17 +209,14 @@ namespace SoftwareGL {
 				}
 				shade = normal * light;
 				VectorMath::vector4 color =
-					(tri.GetV1().GetColor() * s +
-						tri.GetV2().GetColor() * t +
-						tri.GetV3().GetColor() * u) * shade;
-				VectorMath::vector2 uv = {
-					tri.GetV1().GetTexture().x * s +
-					tri.GetV2().GetTexture().x * t +
-					tri.GetV3().GetTexture().x * u,
-					tri.GetV1().GetTexture().y * s +
-					tri.GetV2().GetTexture().y * t +
-					tri.GetV3().GetTexture().y * u
-				};
+					tri.GetV1().GetColor() * s +
+					tri.GetV2().GetColor() * t +
+					tri.GetV3().GetColor() * u;
+				color *= shade;
+				VectorMath::vector2 uv =
+					tri.GetV1().GetTexture() * s +
+					tri.GetV2().GetTexture() * t +
+					tri.GetV3().GetTexture() * u;
 				const Vertex v(
 					VectorMath::vector4(
 						static_cast<float>(x),
