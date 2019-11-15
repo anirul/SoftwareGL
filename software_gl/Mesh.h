@@ -18,7 +18,7 @@ namespace SoftwareGL {
 		bool LoadFromObj(const std::string& path);
 		const std::vector<VectorMath::vector4>& GetPositions() const;
 		const std::vector<VectorMath::vector4>& GetNormals() const;
-		const std::vector<VectorMath::vector2>& GetTextures() const;
+		const std::vector<VectorMath::vector3>& GetTextures() const;
 		const std::vector<std::array<int, 3>>& GetIndices() const;
 
 	public:
@@ -27,6 +27,7 @@ namespace SoftwareGL {
 		void AllPositionMatrixMult(const VectorMath::matrix& matrix);
 		void AllNormalMatrixMult(const VectorMath::matrix& matrix);
 		// Re normalizing.
+		void AllTextureDivideByZ();
 		void AllPositionDivideByW();
 		// Function to change all positions.
 		void AllPositionAdd(const float f);
@@ -59,7 +60,7 @@ namespace SoftwareGL {
 	private:
 		std::vector<VectorMath::vector4> positions_ = {};
 		std::vector<VectorMath::vector4> normals_ = {};
-		std::vector<VectorMath::vector2> textures_ = {};
+		std::vector<VectorMath::vector3> textures_ = {};
 		std::vector<std::array<int, 3>> indices_ = {};
 	};
 

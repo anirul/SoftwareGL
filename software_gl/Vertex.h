@@ -17,7 +17,7 @@ namespace SoftwareGL {
 			const VectorMath::vector4& position,
 			const VectorMath::vector4& color,
 			const VectorMath::vector4& normal,
-			const VectorMath::vector2& texture) :
+			const VectorMath::vector3& texture) :
 			position_(position),
 			color_(color),
 			normal_(normal),
@@ -33,8 +33,8 @@ namespace SoftwareGL {
 		void SetColor(const VectorMath::vector4& color) { color_ = color; }
 		const VectorMath::vector4 GetNormal() const { return normal_; }
 		void SetNormal(const VectorMath::vector4& normal) { normal_ = normal; }
-		const VectorMath::vector2 GetTexture() const { return texture_; }
-		void SetTexture(const VectorMath::vector2& texture) 
+		const VectorMath::vector3 GetTexture() const { return texture_; }
+		void SetTexture(const VectorMath::vector3& texture) 
 		{ 
 			texture_ = texture; 
 		}
@@ -48,7 +48,7 @@ namespace SoftwareGL {
 		VectorMath::vector4 position_ = { 0, 0, 0, 1 };
 		VectorMath::vector4 color_ = { .5, .5, .5, 1 };
 		VectorMath::vector4 normal_ = { 0, 0, 0, 0 };
-		VectorMath::vector2 texture_ = { 0, 0 };
+		VectorMath::vector3 texture_ = { 0, 0, 1 };
 	};
 
 }	// End of namespace SoftwareGL.

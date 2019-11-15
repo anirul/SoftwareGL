@@ -44,7 +44,7 @@ namespace SoftwareGL {
 					case 't':
 					{
 						assert(dump == "vt");
-						VectorMath::vector2 v(0, 0);
+						VectorMath::vector3 v(0, 0, 1);
 						if (!(iss >> v.x)) return false;
 						if (!(iss >> v.y)) return false;
 						textures_.push_back(v);
@@ -109,7 +109,7 @@ namespace SoftwareGL {
 		return normals_;
 	}
 
-	const std::vector<VectorMath::vector2>& Mesh::GetTextures() const
+	const std::vector<VectorMath::vector3>& Mesh::GetTextures() const
 	{
 		return textures_;
 	}
@@ -151,9 +151,27 @@ namespace SoftwareGL {
 			positions_.end(),
 			[](VectorMath::vector4& vec)
 		{
-			vec.x /= vec.w;
-			vec.y /= vec.w;
-			vec.z /= vec.w;
+			vec *= 1 / vec.w;
+		});
+	}
+
+	void Mesh::AllTextureDivideByZ()
+	{
+		std::for_each(
+			std::execution::par,
+			textures_.begin(),
+			textures_.end(),
+			[](VectorMath::vector3& vec)
+		{
+			vec *= 1 / vec.z;
+		});
+		std::for_each(
+			indices_.begin(),
+			indices_.end(),
+			[this](const std::array<int, 3>& indices)
+		{
+			float w = positions_[indices[0]].w;
+			textures_[indices[1]].z = 1.f / w;
 		});
 	}
 
