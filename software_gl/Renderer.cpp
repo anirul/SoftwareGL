@@ -65,8 +65,10 @@ namespace SoftwareGL {
 		{
 			const int dx = static_cast<int>(texture_.GetWidth());
 			const int dy = static_cast<int>(texture_.GetHeight());
-			int ut = static_cast<int>(v.GetTexture().x * dx);
-			int vt = static_cast<int>(v.GetTexture().y * dy);
+			int ut = static_cast<int>(
+				(v.GetTexture().x / v.GetTexture().z) * dx);
+			int vt = static_cast<int>(
+				(v.GetTexture().y / v.GetTexture().z) * dy);
 			ut = clip<int>(ut, 0, dx - 1);
 			vt = clip<int>(vt, 0, dy - 1);
 			const int index = ut + vt * dx;
@@ -213,7 +215,7 @@ namespace SoftwareGL {
 					tri.GetV2().GetColor() * t +
 					tri.GetV3().GetColor() * u;
 				color *= shade;
-				VectorMath::vector2 uv =
+				VectorMath::vector3 uv =
 					tri.GetV1().GetTexture() * s +
 					tri.GetV2().GetTexture() * t +
 					tri.GetV3().GetTexture() * u;
