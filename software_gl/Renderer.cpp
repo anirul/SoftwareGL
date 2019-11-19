@@ -8,11 +8,6 @@
 
 namespace SoftwareGL {
 
-	template <typename T>
-	T clip(const T& n, const T& lower, const T& upper) {
-		return std::max(lower, std::min(n, upper));
-	}
-
 	void Renderer::ClearFrame(
 		const VectorMath::vector& color, 
 		const float z_max)
@@ -65,13 +60,13 @@ namespace SoftwareGL {
 		{
 			const int dx = static_cast<int>(texture_.GetWidth());
 			const int dy = static_cast<int>(texture_.GetHeight());
-			int ut = static_cast<int>(
-				(v.GetTexture().x / v.GetTexture().z) * dx);
-			int vt = static_cast<int>(
-				(v.GetTexture().y / v.GetTexture().z) * dy);
-			ut = clip<int>(ut, 0, dx - 1);
-			vt = clip<int>(vt, 0, dy - 1);
-			const int index = ut + vt * dx;
+			float ut = (v.GetTexture().x / v.GetTexture().z) * dx;
+			float vt = (v.GetTexture().y / v.GetTexture().z) * dy;
+			int iut = static_cast<int>(ut);
+			int ivt = static_cast<int>(vt);
+			iut = std::clamp<int>(iut, 0, dx - 1);
+			ivt = std::clamp<int>(ivt, 0, dy - 1);
+			const int index = iut + ivt * dx;
 			color |= texture_[index];
 		}
 		// Draw the pixel
