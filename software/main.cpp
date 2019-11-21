@@ -9,7 +9,7 @@
 #include <GL/glew.h>
 #include <SDL.h>
 
-#include "../software_gl/WindowSDL2GL.h"
+#include "WindowSDL2GL.h"
 #include "WindowSoftwareGL.h"
 
 #if defined(_WIN32) || defined(_WIN64)

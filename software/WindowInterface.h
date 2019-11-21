@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SDL.h>
-#include "Image.h"
+#include "../software_gl/Image.h"
 
 namespace SoftwareGL {
 
