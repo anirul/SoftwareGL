@@ -25,5 +25,6 @@ int main(int ac, char** av)
 	SoftwareGL::WindowSDL2GL window(
 		std::make_shared<WindowSoftwareGL>(640, 480));
 	window.Startup();
+	window.Run();
 	return 0;
 }

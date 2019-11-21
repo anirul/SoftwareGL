@@ -15,8 +15,10 @@ namespace SoftwareGL {
 		WindowSDL2GL(std::shared_ptr<WindowInterface> window_interface);
 		// Suppose to call all the cleanups.
 		virtual ~WindowSDL2GL();
-		// Start the window THIS WILL TAKE THE HAND.
+		// Start the window.
 		void Startup();
+		// Run the window THIS WILL TAKE THE HAND.
+		void Run();
 
 	protected:
 		void PostRunCompute();
@@ -27,6 +29,8 @@ namespace SoftwareGL {
 		SDL_GLContext sdl_gl_context_ = nullptr;
 		GLuint vertex_array_object_ = 0;
 		GLuint shader_program_ = 0;
+		int major_version_ = 0;
+		int minor_version_ = 0;
 	};
 
 }	// End of namespace SoftwareGL.

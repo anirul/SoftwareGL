@@ -61,9 +61,9 @@ namespace SoftwareGL {
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
-				NULL, 
-				"Couldn't start a window in SDL.", 
-				"Software GL", 
+				NULL,
+				"Couldn't start a window in SDL.",
+				"Software GL",
 				0);
 #else
 			std::cout << "Couldn't start a window in SDL." << std::endl;
@@ -78,12 +78,11 @@ namespace SoftwareGL {
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		int value1;
-		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value1);
-		int value2;
-		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value2);
-		// Timing counter.
-		static auto start = std::chrono::system_clock::now();
+		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major_version_);
+		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor_version_);
+		// Vsync off.
+		SDL_GL_SetSwapInterval(0);
+
 		// Initialize GLEW.
 		if (GLEW_OK != glewInit())
 		{
@@ -104,14 +103,15 @@ namespace SoftwareGL {
 			0.5f, -0.5f,  0.0f,
 		   -0.5f, -0.5f,  0.0f
 		};
+
 		// Vertex buffer initialization.
 		GLuint vertex_buffer_object = 0;
 		glGenBuffers(1, &vertex_buffer_object);
 		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object);
 		glBufferData(
-			GL_ARRAY_BUFFER, 
-			9 * sizeof(float), 
-			points, 
+			GL_ARRAY_BUFFER,
+			9 * sizeof(float),
+			points,
 			GL_STATIC_DRAW);
 		// Vertex array initialization.
 		glGenVertexArrays(1, &vertex_array_object_);
@@ -122,21 +122,28 @@ namespace SoftwareGL {
 
 		// Shader program.
 		GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-		const char* vertex_buffer = 
+		const char* vertex_buffer =
 			window_interface_->GetVertexShader().c_str();
 		glShaderSource(vs, 1, &vertex_buffer, NULL);
 		glCompileShader(vs);
 		GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-		const char* fragment_shader = 
+		const char* fragment_shader =
 			window_interface_->GetFragmentShader().c_str();
 		glShaderSource(fs, 1, &fragment_shader, NULL);
 		glCompileShader(fs);
 		glAttachShader(shader_program_, fs);
 		glAttachShader(shader_program_, vs);
 		glLinkProgram(shader_program_);
+	}
+
+	void WindowSDL2GL::Run()
+	{
+		// Timing counter.
+		static auto start = std::chrono::system_clock::now();
 
 		// While Run return true continue.
-		if (window_interface_->Startup({ value1, value2 })) {
+		if (window_interface_->Startup({ major_version_, minor_version_ })) 
+		{
 			bool loop = true;
 			float previous_count = 0.0f;
 			float redraw_window_title = 0.0f;
@@ -144,7 +151,8 @@ namespace SoftwareGL {
 			float frame_count = 0.f;
 			const size_t array_length = 10;
 			std::array<float, array_length> fps_stats = { 0.f };
-			do {
+			do 
+			{
 				// Compute the time difference from previous frame.
 				auto end = std::chrono::system_clock::now();
 				std::chrono::duration<float> time = end - start;
@@ -185,7 +193,8 @@ namespace SoftwareGL {
 					frame_count = 0;
 				}
 				previous_count = time.count();
-			} while (loop);
+			} 
+			while (loop);
 			window_interface_->Cleanup();
 		}
 		// Cleanup.
