@@ -36,13 +36,3 @@ const std::pair<size_t, size_t> WindowSoftwareGL::GetWindowSize() const
 {
 	return std::make_pair(width_, height_);
 }
-
-const std::string WindowSoftwareGL::GetVertexShader() const
-{
-	return "";
-}
-
-const std::string WindowSoftwareGL::GetFragmentShader() const
-{
-	return "";
-}

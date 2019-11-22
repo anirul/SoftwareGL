@@ -14,8 +14,8 @@
 #include <GL/glew.h>
 #include <SDL.h>
 
+#include "Shader.h"
 #include "WindowSDL2GL.h"
-#include "../software_gl/Image.h"
 
 namespace SoftwareGL {
 
@@ -31,11 +31,10 @@ namespace SoftwareGL {
 	void WindowSDL2GL::PostRunCompute()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glUseProgram(shader_program_);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 	}
 
-	void WindowSDL2GL::Startup()
+	bool WindowSDL2GL::Startup()
 	{
 		if (SDL_Init(SDL_INIT_VIDEO) != 0)
 		{
@@ -44,7 +43,7 @@ namespace SoftwareGL {
 #else
 			std::cout << "Couldn't initialize SDL." << std::endl;
 #endif
-			return;
+			return false;
 		}
 		const auto p_size = window_interface_->GetWindowSize();
 		sdl_window_ = SDL_CreateWindow(
@@ -65,7 +64,7 @@ namespace SoftwareGL {
 #else
 			std::cout << "Couldn't start a window in SDL." << std::endl;
 #endif
-			return;
+			return false;
 		}
 		// GL context.
 		sdl_gl_context_ = SDL_GL_CreateContext(sdl_window_);
@@ -92,6 +91,7 @@ namespace SoftwareGL {
 #else
 			std::cout << "Couldn't start GLEW." << std::endl;
 #endif
+			return false;
 		}
 
 		// Before the main loop initialization
@@ -115,83 +115,109 @@ namespace SoftwareGL {
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
 		// Shader program.
-		GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-		const char* vertex_buffer =
-			window_interface_->GetVertexShader().c_str();
-		glShaderSource(vs, 1, &vertex_buffer, NULL);
-		glCompileShader(vs);
-		GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-		const char* fragment_shader =
-			window_interface_->GetFragmentShader().c_str();
-		glShaderSource(fs, 1, &fragment_shader, NULL);
-		glCompileShader(fs);
-		glAttachShader(shader_program_, fs);
-		glAttachShader(shader_program_, vs);
+		OpenGL::Shader vertex_shader(GL_VERTEX_SHADER);
+		if (!vertex_shader.LoadFromFile("./vertex.glsl"))
+		{
+#if defined(_WIN32) || defined(_WIN64)
+			MessageBox(
+				NULL, 
+				vertex_shader.GetErrorMessage().c_str(), 
+				"Vertex shader Error", 
+				0);
+#else
+			std::cout 
+				<< "Vertex shader Error: " 
+				<< vertex_shader.GetErrorMessage() 
+				<< std::endl;
+#endif
+			return false;
+		}
+
+		OpenGL::Shader fragment_shader(GL_FRAGMENT_SHADER);
+		if (!fragment_shader.LoadFromFile("./fragment.glsl"))
+		{
+#if defined(_WIN32) || defined(_WIN64)
+			MessageBox(
+				NULL,
+				fragment_shader.GetErrorMessage().c_str(),
+				"Fragment shader Error",
+				0);
+#else
+			std::cout
+				<< "Fragment shader Error: "
+				<< fragment_shader.GetErrorMessage()
+				<< std::endl;
+#endif
+			return false;
+		}
+		// Create the program.
+		shader_program_ = glCreateProgram();
+		glAttachShader(shader_program_, fragment_shader.GetId());
+		glAttachShader(shader_program_, vertex_shader.GetId());
 		glLinkProgram(shader_program_);
+		glUseProgram(shader_program_);
+		return window_interface_->Startup({ major_version_, minor_version_ });
 	}
 
 	void WindowSDL2GL::Run()
 	{
 		// While Run return true continue.
-		if (window_interface_->Startup({ major_version_, minor_version_ })) 
+		bool loop = true;
+		float previous_count = 0.0f;
+		float redraw_window_title = 0.0f;
+		const float redraw_window_delta = 0.01f;
+		float frame_count = 0.f;
+		const size_t array_length = 10;
+		std::array<float, array_length> fps_stats = { 0.f };
+		// Timing counter.
+		static auto start = std::chrono::system_clock::now();
+		do 
 		{
-			bool loop = true;
-			float previous_count = 0.0f;
-			float redraw_window_title = 0.0f;
-			const float redraw_window_delta = 0.01f;
-			float frame_count = 0.f;
-			const size_t array_length = 10;
-			std::array<float, array_length> fps_stats = { 0.f };
-
-			// Timing counter.
-			static auto start = std::chrono::system_clock::now();
-
-			do 
+			// Compute the time difference from previous frame.
+			auto end = std::chrono::system_clock::now();
+			std::chrono::duration<float> time = end - start;
+			// Process events
+			SDL_Event event;
+			if (SDL_PollEvent(&event))
 			{
-				// Compute the time difference from previous frame.
-				auto end = std::chrono::system_clock::now();
-				std::chrono::duration<float> time = end - start;
-				// Process events
-				SDL_Event event;
-				if (SDL_PollEvent(&event))
-				{
-					if (!window_interface_->RunEvent(event))
-					{
-						loop = false;
-					}
-				}
-				if (!window_interface_->RunCompute(
-					time.count() - previous_count))
+				if (!window_interface_->RunEvent(event))
 				{
 					loop = false;
+					continue;
 				}
-				PostRunCompute();
-				SDL_GL_SwapWindow(sdl_window_);
-				const float window_delta = time.count() - redraw_window_title;
-				++frame_count;
-				if (window_delta > redraw_window_delta)
-				{
-					static size_t counter = 0;
-					// Compute the approximate fps at instant t.
-					fps_stats[++counter % array_length] =
-						frame_count * (1.f / window_delta);
-					// Make an average on a number of sub values.
-					float fps_value = std::accumulate(
-						fps_stats.begin(), 
-						fps_stats.end(), 
-						0.0f) / fps_stats.size();
-					std::ostringstream oss;
-					oss << "Shader GL - "
-						<< fps_value;
-					SDL_SetWindowTitle(sdl_window_, oss.str().c_str());
-					redraw_window_title = time.count();
-					frame_count = 0;
-				}
-				previous_count = time.count();
-			} 
-			while (loop);
-			window_interface_->Cleanup();
-		}
+			}
+			if (!window_interface_->RunCompute(
+				time.count() - previous_count))
+			{
+				loop = false;
+				continue;
+			}
+			PostRunCompute();
+			const float window_delta = time.count() - redraw_window_title;
+			++frame_count;
+			if (window_delta > redraw_window_delta)
+			{
+				static size_t counter = 0;
+				// Compute the approximate fps at instant t.
+				fps_stats[++counter % array_length] =
+					frame_count * (1.f / window_delta);
+				// Make an average on a number of sub values.
+				float fps_value = std::accumulate(
+					fps_stats.begin(), 
+					fps_stats.end(), 
+					0.0f) / fps_stats.size();
+				std::ostringstream oss;
+				oss << "Shader GL - "
+					<< fps_value;
+				SDL_SetWindowTitle(sdl_window_, oss.str().c_str());
+				redraw_window_title = time.count();
+				frame_count = 0;
+			}
+			previous_count = time.count();
+			SDL_GL_SwapWindow(sdl_window_);
+		} 
+		while (loop);
+		window_interface_->Cleanup();
 		// Cleanup.
 		SDL_GL_DeleteContext(sdl_gl_context_);
 		SDL_DestroyWindow(sdl_window_);

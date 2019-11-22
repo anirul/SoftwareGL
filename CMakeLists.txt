@@ -52,10 +52,14 @@ add_executable(gl_shader WIN32
     ${PROJECT_SOURCE_DIR}/gl_shader/WindowSoftwareGL.cpp
     ${PROJECT_SOURCE_DIR}/gl_shader/WindowSDL2GL.cpp
     ${PROJECT_SOURCE_DIR}/gl_shader/WindowSDL2GL.h
+    ${PROJECT_SOURCE_DIR}/gl_shader/Shader.h
+    ${PROJECT_SOURCE_DIR}/gl_shader/Shader.cpp
+	${PROJECT_SOURCE_DIR}/build/vertex.glsl
+	${PROJECT_SOURCE_DIR}/build/fragment.glsl
 )
 
 target_link_libraries(gl_shader PRIVATE
     software_gl
-    SDL2::SDL2
+	SDL2::SDL2
     GLEW::GLEW
 )

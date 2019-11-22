@@ -16,7 +16,7 @@ namespace SoftwareGL {
 		// Suppose to call all the cleanups.
 		virtual ~WindowSDL2GL();
 		// Start the window.
-		void Startup();
+		bool Startup();
 		// Run the window THIS WILL TAKE THE HAND.
 		void Run();
 

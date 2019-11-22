@@ -13,8 +13,6 @@ public:
 	bool RunEvent(const SDL_Event& event) override;
 	void Cleanup() override {}
 	const std::pair<size_t, size_t> GetWindowSize() const override;
-	const std::string GetVertexShader() const override;
-	const std::string GetFragmentShader() const override;
 
 protected:
 	size_t width_ = 640;

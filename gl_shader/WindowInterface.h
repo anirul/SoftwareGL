@@ -19,10 +19,6 @@ namespace SoftwareGL {
 		virtual void Cleanup() = 0;
 		// Get size of the window.
 		virtual const std::pair<size_t, size_t> GetWindowSize() const = 0;
-		// Get the vertex shader.
-		virtual const std::string GetVertexShader() const = 0;
-		// Get the fragment shader.
-		virtual const std::string GetFragmentShader() const = 0;
 	};
 
 } // End of namespace SoftwareGL.
