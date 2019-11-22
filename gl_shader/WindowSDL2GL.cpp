@@ -30,10 +30,8 @@ namespace SoftwareGL {
 
 	void WindowSDL2GL::PostRunCompute()
 	{
-		// Copy it to the 1 quad on the screen.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(shader_program_);
-		// draw points 0-3 from the currently bound VAO with current in-use shader
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 	}
 
@@ -112,7 +110,7 @@ namespace SoftwareGL {
 			9 * sizeof(float),
 			points,
 			GL_STATIC_DRAW);
-		// Vertex array initialization.
+		// Vertex attribute initialization.
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
