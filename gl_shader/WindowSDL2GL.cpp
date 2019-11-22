@@ -156,7 +156,18 @@ namespace SoftwareGL {
 		glAttachShader(shader_program_, vertex_shader.GetId());
 		glLinkProgram(shader_program_);
 		glUseProgram(shader_program_);
-		return window_interface_->Startup({ major_version_, minor_version_ });
+		if (!window_interface_->Startup({ major_version_, minor_version_ })) {
+			std::string error = "Error version is too low (" +
+				std::to_string(major_version_) + ", " +
+				std::to_string(minor_version_) + ")";
+#if defined(_WIN32) || defined(_WIN64)
+			MessageBox(NULL, error.c_str(), "Fragment shader Error", 0);
+#else
+			std::cout << "Fragment shader Error: " << error << std::endl;
+#endif
+			return false;
+		}
+		return true;
 	}
 
 	void WindowSDL2GL::Run()
