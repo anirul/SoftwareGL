@@ -33,7 +33,6 @@ namespace SoftwareGL {
 		// Copy it to the 1 quad on the screen.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(shader_program_);
-		glBindVertexArray(vertex_array_object_);
 		// draw points 0-3 from the currently bound VAO with current in-use shader
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 	}
@@ -114,10 +113,7 @@ namespace SoftwareGL {
 			points,
 			GL_STATIC_DRAW);
 		// Vertex array initialization.
-		glGenVertexArrays(1, &vertex_array_object_);
-		glBindVertexArray(vertex_array_object_);
 		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
 		// Shader program.
@@ -138,9 +134,6 @@ namespace SoftwareGL {
 
 	void WindowSDL2GL::Run()
 	{
-		// Timing counter.
-		static auto start = std::chrono::system_clock::now();
-
 		// While Run return true continue.
 		if (window_interface_->Startup({ major_version_, minor_version_ })) 
 		{
@@ -151,6 +144,10 @@ namespace SoftwareGL {
 			float frame_count = 0.f;
 			const size_t array_length = 10;
 			std::array<float, array_length> fps_stats = { 0.f };
+
+			// Timing counter.
+			static auto start = std::chrono::system_clock::now();
+
 			do 
 			{
 				// Compute the time difference from previous frame.
