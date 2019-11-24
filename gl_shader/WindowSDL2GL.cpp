@@ -11,6 +11,7 @@
 #include <array>
 #include <algorithm>
 #include <numeric>
+#include <functional>
 #include <GL/glew.h>
 #include <SDL.h>
 
@@ -18,6 +19,60 @@
 #include "WindowSDL2GL.h"
 
 namespace SoftwareGL {
+
+	void GLAPIENTRY WindowSDL2GL::ErrorMessageHandler(
+		GLenum source,
+		GLenum type,
+		GLuint id,
+		GLenum severity,
+		GLsizei length,
+		const GLchar* message,
+		const void* userParam) 
+	{
+		std::ostringstream oss;
+		oss << "message\t: " << message << std::endl;
+		oss << "type\t: ";
+		switch (type) 
+		{
+		case GL_DEBUG_TYPE_ERROR:
+			oss << "ERROR";
+			break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+			oss << "DEPRECATED_BEHAVIOR";
+			break;
+		case GL_DEBUG_TYPE_PORTABILITY:
+			oss << "PORABILITY";
+			break;
+		case GL_DEBUG_TYPE_PERFORMANCE:
+			oss << "PERFORMANCE";
+			break;
+		case GL_DEBUG_TYPE_OTHER:
+			oss << "OTHER";
+			break;
+		}
+		oss << std::endl;
+		oss << "id\t: " << id << std::endl;
+		oss << "severity\t: ";
+		switch (severity) 
+		{
+		case GL_DEBUG_SEVERITY_LOW:
+			oss << "LOW";
+			break;
+		case GL_DEBUG_SEVERITY_MEDIUM:
+			oss << "MEDIUM";
+			break;
+		case GL_DEBUG_SEVERITY_HIGH:
+			oss << "HIGH";
+			break;
+		}
+		oss << std::endl;
+#if defined(_WIN32) || defined(_WIN64)
+		MessageBox(NULL, oss.str().c_str(),	"OpenGL Error",	0);
+#else
+		std::cout << "OpenGL Error: " << oss.str() << std::endl;
+#endif
+
+	}
 
 	WindowSDL2GL::WindowSDL2GL(
 		std::shared_ptr<WindowInterface> window_interface) :
@@ -72,7 +127,7 @@ namespace SoftwareGL {
 			SDL_GL_CONTEXT_PROFILE_MASK,
 			SDL_GL_CONTEXT_PROFILE_CORE);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major_version_);
 		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor_version_);
@@ -93,26 +148,51 @@ namespace SoftwareGL {
 #endif
 			return false;
 		}
-
-		// Before the main loop initialization
+#if _DEBUG
+		// Enable error message.
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallback(WindowSDL2GL::ErrorMessageHandler, nullptr);
+#endif
+		// Points and color initialization.
 		float points[] = {
-			0.0f,  0.5f,  0.0f,
-			0.5f, -0.5f,  0.0f,
-		   -0.5f, -0.5f,  0.0f
+			0.0f, 0.5f, 0.0f,
+			0.5f, -.5f, 0.0f,
+			-.5f, -.5f, 0.0f,
+		};
+		float colors[] = {
+			1.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 1.0f,
 		};
 
-		// Vertex buffer initialization.
-		GLuint vertex_buffer_object = 0;
-		glGenBuffers(1, &vertex_buffer_object);
-		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object);
+		// Position buffer initialization.
+		GLuint point_buffer_object = 0;
+		glGenBuffers(1, &point_buffer_object);
+		glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
 		glBufferData(
 			GL_ARRAY_BUFFER,
 			9 * sizeof(float),
 			points,
 			GL_STATIC_DRAW);
+		// Color buffer initialization.
+		GLuint color_buffer_object = 0;
+		glGenBuffers(1, &color_buffer_object);
+		glBindBuffer(GL_ARRAY_BUFFER, color_buffer_object);
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			9 * sizeof(float),
+			colors,
+			GL_STATIC_DRAW);
 		// Vertex attribute initialization.
-		glEnableVertexAttribArray(0);
+		GLuint vertex_attribute_object = 0;
+		glGenVertexArrays(1, &vertex_attribute_object);
+		glBindVertexArray(vertex_attribute_object);
+		glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, color_buffer_object);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
 
 		// Shader program.
 		OpenGL::Shader vertex_shader(GL_VERTEX_SHADER);

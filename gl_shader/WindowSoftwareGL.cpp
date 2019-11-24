@@ -7,7 +7,7 @@
 
 bool WindowSoftwareGL::Startup(const std::pair<int, int>& gl_version)
 {
-	return (gl_version.first >= 4) && (gl_version.second >= 2);
+	return (gl_version.first >= 4) && (gl_version.second >= 3);
 }
 
 bool WindowSoftwareGL::RunCompute(const float delta_time)

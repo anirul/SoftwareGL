@@ -22,6 +22,14 @@ namespace SoftwareGL {
 
 	protected:
 		void PostRunCompute();
+		static void GLAPIENTRY ErrorMessageHandler(
+			GLenum source,
+			GLenum type,
+			GLuint id,
+			GLenum severity,
+			GLsizei length,
+			const GLchar* message,
+			const void* userParam);
 
 	private:
 		std::shared_ptr<WindowInterface> window_interface_;
