@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../software_gl/WindowInterface.h"
+#include "WindowInterface.h"
 #include "../software_gl/VectorMath.h"
 #include "../software_gl/Image.h"
 #include "../software_gl/Camera.h"

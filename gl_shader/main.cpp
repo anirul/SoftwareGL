@@ -2,14 +2,14 @@
 #include <vector>
 
 #if defined(_WIN32) || defined(_WIN64)
-	#define WINDOWS_LEAN_AND_MEAN
-	#include <windows.h>
+#define WINDOWS_LEAN_AND_MEAN
+#include <windows.h>
 #endif
 
 #include <GL/glew.h>
 #include <SDL.h>
 
-#include "../software_gl/WindowSDL2GL.h"
+#include "WindowSDL2GL.h"
 #include "WindowSoftwareGL.h"
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -24,6 +24,10 @@ int main(int ac, char** av)
 {
 	SoftwareGL::WindowSDL2GL window(
 		std::make_shared<WindowSoftwareGL>(640, 480));
-	window.Startup();
+	if (!window.Startup())
+	{
+		return -1;
+	}
+	window.Run();
 	return 0;
 }

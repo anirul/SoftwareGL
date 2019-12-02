@@ -9,7 +9,7 @@
 #include <SDL.h>
 
 #include "WindowSDL2GL.h"
-#include "Image.h"
+#include "../software_gl/Image.h"
 
 namespace SoftwareGL {
 
