@@ -9,7 +9,7 @@ public:
 		width_(width), 
 		height_(height) {}
 	bool Startup(const std::pair<int, int>& gl_version) override;
-	bool RunCompute(const float delta_time) override;
+	bool RunCompute(const double delta_time) override;
 	bool RunEvent(const SDL_Event& event) override;
 	void Cleanup() override {}
 	const std::pair<size_t, size_t> GetWindowSize() const override;

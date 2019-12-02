@@ -64,6 +64,9 @@ namespace SoftwareGL {
 		case GL_DEBUG_SEVERITY_HIGH:
 			oss << "HIGH";
 			break;
+		case GL_DEBUG_SEVERITY_NOTIFICATION:
+			oss << "NOTIFICATION";
+			break;
 		}
 		oss << std::endl;
 #if defined(_WIN32) || defined(_WIN64)
@@ -71,7 +74,6 @@ namespace SoftwareGL {
 #else
 		std::cout << "OpenGL Error: " << oss.str() << std::endl;
 #endif
-
 	}
 
 	WindowSDL2GL::WindowSDL2GL(
@@ -86,7 +88,8 @@ namespace SoftwareGL {
 	void WindowSDL2GL::PostRunCompute()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 	}
 
 	bool WindowSDL2GL::Startup()
@@ -150,7 +153,7 @@ namespace SoftwareGL {
 		}
 #if _DEBUG
 		// Enable error message.
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(WindowSDL2GL::ErrorMessageHandler, nullptr);
 #endif
 		// Points and color initialization.
@@ -164,6 +167,9 @@ namespace SoftwareGL {
 			0.0f, 1.0f, 0.0f,
 			0.0f, 0.0f, 1.0f,
 		};
+		unsigned int indices[] = {
+			0, 2, 1
+		};
 
 		// Position buffer initialization.
 		GLuint point_buffer_object = 0;
@@ -174,6 +180,7 @@ namespace SoftwareGL {
 			9 * sizeof(float),
 			points,
 			GL_STATIC_DRAW);
+
 		// Color buffer initialization.
 		GLuint color_buffer_object = 0;
 		glGenBuffers(1, &color_buffer_object);
@@ -183,6 +190,16 @@ namespace SoftwareGL {
 			9 * sizeof(float),
 			colors,
 			GL_STATIC_DRAW);
+
+		// Index buffer array.
+		glGenBuffers(1, &index_buffer_object_);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
+		glBufferData(
+			GL_ELEMENT_ARRAY_BUFFER,
+			3 * sizeof(unsigned int), 
+			indices, 
+			GL_STATIC_DRAW);
+
 		// Vertex attribute initialization.
 		GLuint vertex_attribute_object = 0;
 		glGenVertexArrays(1, &vertex_attribute_object);
@@ -191,10 +208,12 @@ namespace SoftwareGL {
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 		glBindBuffer(GL_ARRAY_BUFFER, color_buffer_object);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+		// Enable vertex attrib array.
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 
-		// Shader program.
+		// Vertex Shader program.
 		OpenGL::Shader vertex_shader(GL_VERTEX_SHADER);
 		if (!vertex_shader.LoadFromFile("./vertex.glsl"))
 		{
@@ -213,6 +232,7 @@ namespace SoftwareGL {
 			return false;
 		}
 
+		// Fragment Shader program.
 		OpenGL::Shader fragment_shader(GL_FRAGMENT_SHADER);
 		if (!fragment_shader.LoadFromFile("./fragment.glsl"))
 		{
@@ -230,12 +250,16 @@ namespace SoftwareGL {
 #endif
 			return false;
 		}
+
 		// Create the program.
 		shader_program_ = glCreateProgram();
 		glAttachShader(shader_program_, fragment_shader.GetId());
 		glAttachShader(shader_program_, vertex_shader.GetId());
 		glLinkProgram(shader_program_);
 		glUseProgram(shader_program_);
+
+		// Start the user part of the window.
+		// FIXME(anirul): This should be done before.
 		if (!window_interface_->Startup({ major_version_, minor_version_ })) {
 			std::string error = "Error version is too low (" +
 				std::to_string(major_version_) + ", " +
@@ -254,19 +278,19 @@ namespace SoftwareGL {
 	{
 		// While Run return true continue.
 		bool loop = true;
-		float previous_count = 0.0f;
-		float redraw_window_title = 0.0f;
-		const float redraw_window_delta = 0.01f;
-		float frame_count = 0.f;
+		double previous_count = 0.0f;
+		double redraw_window_title = 0.0f;
+		const double redraw_window_delta = 0.01f;
+		double frame_count = 0.f;
 		const size_t array_length = 10;
-		std::array<float, array_length> fps_stats = { 0.f };
+		std::array<double, array_length> fps_stats = { 0.1 };
 		// Timing counter.
 		static auto start = std::chrono::system_clock::now();
 		do 
 		{
 			// Compute the time difference from previous frame.
 			auto end = std::chrono::system_clock::now();
-			std::chrono::duration<float> time = end - start;
+			std::chrono::duration<double> time = end - start;
 			// Process events
 			SDL_Event event;
 			if (SDL_PollEvent(&event))
@@ -277,29 +301,29 @@ namespace SoftwareGL {
 					continue;
 				}
 			}
-			if (!window_interface_->RunCompute(
-				time.count() - previous_count))
+			if (!window_interface_->RunCompute(time.count() - previous_count))
 			{
 				loop = false;
 				continue;
 			}
 			PostRunCompute();
-			const float window_delta = time.count() - redraw_window_title;
+			const double window_delta = time.count() - redraw_window_title;
 			++frame_count;
 			if (window_delta > redraw_window_delta)
 			{
 				static size_t counter = 0;
 				// Compute the approximate fps at instant t.
 				fps_stats[++counter % array_length] =
-					frame_count * (1.f / window_delta);
+					frame_count * (1. / window_delta);
 				// Make an average on a number of sub values.
-				float fps_value = std::accumulate(
+				double fps_value = std::accumulate(
 					fps_stats.begin(), 
 					fps_stats.end(), 
-					0.0f) / fps_stats.size();
+					0.0) / (double)fps_stats.size();
 				std::ostringstream oss;
-				oss << "Shader GL - "
-					<< fps_value;
+				oss << "Shader GL - ["
+					<< fps_value
+					<< "]FPS";
 				SDL_SetWindowTitle(sdl_window_, oss.str().c_str());
 				redraw_window_title = time.count();
 				frame_count = 0;

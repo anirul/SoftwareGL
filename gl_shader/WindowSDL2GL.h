@@ -37,6 +37,7 @@ namespace SoftwareGL {
 		SDL_GLContext sdl_gl_context_ = nullptr;
 		GLuint vertex_array_object_ = 0;
 		GLuint shader_program_ = 0;
+		GLuint index_buffer_object_ = 0;
 		int major_version_ = 0;
 		int minor_version_ = 0;
 	};
