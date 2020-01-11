@@ -6,6 +6,7 @@
 *.lo
 *.o
 *.obj
+!/asset
 
 # Precompiled Headers
 *.gch
@@ -33,8 +34,6 @@
 *.filters
 
 # Other
+*.DS_Store
 .vs/**
-Debug/**
-x64/**
-thirdparty/**
-build/**
+/build/**

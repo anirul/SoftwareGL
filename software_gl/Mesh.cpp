@@ -4,7 +4,9 @@
 #include <array>
 #include <fstream>
 #include <sstream>
+#if defined(_WIN32) | defined(_WIN64)
 #include <execution>
+#endif
 #include <assert.h>
 
 #include "VectorMath.h"
@@ -122,7 +124,9 @@ namespace SoftwareGL {
 	void Mesh::AllPositionMatrixMult(const VectorMath::matrix& matrix)
 	{
 		std::for_each(
+#if defined(_WIN32) | defined(_WIN64)
 			std::execution::par,
+#endif
 			positions_.begin(), 
 			positions_.end(), 
 			[&matrix](VectorMath::vector4& vec) 
@@ -134,7 +138,9 @@ namespace SoftwareGL {
 	void Mesh::AllNormalMatrixMult(const VectorMath::matrix& matrix)
 	{
 		std::for_each(
+#if defined(_WIN32) | defined(_WIN64)
 			std::execution::par,
+#endif
 			normals_.begin(),
 			normals_.end(),
 			[&matrix](VectorMath::vector4& vec)
@@ -146,7 +152,9 @@ namespace SoftwareGL {
 	void Mesh::AllPositionDivideByW()
 	{
 		std::for_each(
+#if defined(_WIN32) | defined(_WIN64)
 			std::execution::par,
+#endif
 			positions_.begin(),
 			positions_.end(),
 			[](VectorMath::vector4& vec)
@@ -158,7 +166,9 @@ namespace SoftwareGL {
 	void Mesh::AllTextureDivideByZ()
 	{
 		std::for_each(
+#if defined(_WIN32) | defined(_WIN64)
 			std::execution::par,
+#endif
 			textures_.begin(),
 			textures_.end(),
 			[](VectorMath::vector3& vec)
@@ -178,7 +188,9 @@ namespace SoftwareGL {
 	void Mesh::AllPositionAdd(const float f)
 	{
 		std::for_each(
+#if defined(_WIN32) | defined(_WIN64)
 			std::execution::par,
+#endif
 			positions_.begin(),
 			positions_.end(),
 			[&f](VectorMath::vector4& vec)
@@ -190,7 +202,9 @@ namespace SoftwareGL {
 	void Mesh::AllPositionMult(const float f)
 	{
 		std::for_each(
+#if defined(_WIN32) | defined(_WIN64)
 			std::execution::par,
+#endif
 			positions_.begin(),
 			positions_.end(),
 			[&f](VectorMath::vector4& vec)
@@ -202,7 +216,9 @@ namespace SoftwareGL {
 	void Mesh::AllPositionMult(const VectorMath::vector4& v)
 	{
 		std::for_each(
+#if defined(_WIN32) | defined(_WIN64)
 			std::execution::par,
+#endif
 			positions_.begin(),
 			positions_.end(),
 			[&v](VectorMath::vector4& vec)

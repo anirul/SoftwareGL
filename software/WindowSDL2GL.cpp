@@ -15,10 +15,7 @@ namespace SoftwareGL {
 
 	WindowSDL2GL::WindowSDL2GL(
 		std::shared_ptr<WindowInterface> window_interface) :
-		window_interface_(window_interface) 
-	{
-		glGenTextures(1, &texture_id_);
-	}
+		window_interface_(window_interface) {}
 
 	WindowSDL2GL::~WindowSDL2GL()
 	{

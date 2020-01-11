@@ -2,7 +2,9 @@
 #include <algorithm>
 #include <vector>
 #include <tuple>
+#if defined(_WIN32) | defined(_WIN64)
 #include <execution>
+#endif
 #include <assert.h>
 #include "Image.h"
 
@@ -179,7 +181,7 @@ namespace SoftwareGL {
 				if ((t < 0.0f) || (t > 1.0f)) continue;
 				const float u = 1.f - (s + t);
 				if ((u < 0.0f) || (u > 1.0f)) continue;
-				assert((1 - (s + t + u)) < epsilon);
+				assert((1 - (s + t + u)) < VectorMath::epsilon);
 				// Compute z using barycentric coordinates.
 				const float z =
 					tri.GetV1().GetZ() * s +
@@ -189,9 +191,11 @@ namespace SoftwareGL {
 				float shade = 1.0f;
 				const bool are_normal_different =
 					abs((tri.GetV1().GetNormal() -
-						tri.GetV2().GetNormal()).LengthSquared()) < epsilon &&
+						tri.GetV2().GetNormal()).LengthSquared()) <
+						VectorMath::epsilon &&
 					abs((tri.GetV1().GetNormal() -
-						tri.GetV3().GetNormal()).LengthSquared()) < epsilon;
+						tri.GetV3().GetNormal()).LengthSquared()) <
+						VectorMath::epsilon;
 				VectorMath::vector4 normal;
 				if (are_normal_different)
 				{

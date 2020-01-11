@@ -22,8 +22,16 @@ int WINAPI WinMain(
 int main(int ac, char** av)
 #endif
 {
-	SoftwareGL::WindowSDL2GL window(
-		std::make_shared<WindowSoftwareGL>(640, 480));
-	window.Startup();
+	try
+	{
+		SoftwareGL::WindowSDL2GL window(
+			std::make_shared<WindowSoftwareGL>(640, 480));
+		window.Startup();
+	}
+	catch(std::exception& ex)
+	{
+		std::cerr << "exception: " << ex.what() << std::endl;
+		return -1;
+	}
 	return 0;
 }

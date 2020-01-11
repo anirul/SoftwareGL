@@ -23,16 +23,15 @@
 #pragma once
 
 // Define the vectorization of intrinsic.
-#define ENABLE_VEC (ENABLE_VEC | _M_X64)
-
+#if defined(_WIN32) | defined(_WIN64)
+#define ENABLE_VEC 1
+#endif
 #ifdef ENABLE_VEC
-#	include <fvec.h>
+#include <fvec.h>
 #endif // ENABLE_VEC
 #include <assert.h>
 #include <string.h>
 
-#define epsilon 1e-5f
-#define huge 3.402823466E+38f
 #define _USE_MATH_DEFINES
 #include <math.h>
 
@@ -81,6 +80,9 @@
 #endif // WIN32
 
 namespace VectorMath {
+
+	constexpr float epsilon = 1e-5f;
+	constexpr float huge = 3.402823466E+38f;
 
 #ifdef ENABLE_VEC
 #	ifdef WIN32

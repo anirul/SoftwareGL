@@ -147,7 +147,7 @@ namespace SoftwareGL {
 				"Shader GL Error",
 				0);
 #else
-			std::cout << "Couldn't start GLEW." << std::endl;
+			std::cerr << "Couldn't start GLEW." << std::endl;
 #endif
 			return false;
 		}
