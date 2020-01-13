@@ -12,6 +12,9 @@
 #include <algorithm>
 #include <numeric>
 #include <functional>
+#include <imgui.h>
+#include "../imgui/imgui_impl_sdl.h"
+#include "../imgui/imgui_impl_opengl3.h"
 #include <GL/glew.h>
 #include <SDL.h>
 
@@ -29,6 +32,7 @@ namespace SoftwareGL {
 		const GLchar* message,
 		const void* userParam) 
 	{
+		if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
 		std::ostringstream oss;
 		oss << "message\t: " << message << std::endl;
 		oss << "type\t: ";
@@ -156,6 +160,7 @@ namespace SoftwareGL {
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(WindowSDL2GL::ErrorMessageHandler, nullptr);
 #endif
+
 		// Points and color initialization.
 		float points[] = {
 			0.0f, 0.5f, 0.0f,
@@ -215,7 +220,7 @@ namespace SoftwareGL {
 
 		// Vertex Shader program.
 		OpenGL::Shader vertex_shader(GL_VERTEX_SHADER);
-		if (!vertex_shader.LoadFromFile("./vertex.glsl"))
+		if (!vertex_shader.LoadFromFile("../asset/vertex.glsl"))
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
@@ -234,7 +239,7 @@ namespace SoftwareGL {
 
 		// Fragment Shader program.
 		OpenGL::Shader fragment_shader(GL_FRAGMENT_SHADER);
-		if (!fragment_shader.LoadFromFile("./fragment.glsl"))
+		if (!fragment_shader.LoadFromFile("../asset/fragment.glsl"))
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
@@ -271,6 +276,17 @@ namespace SoftwareGL {
 #endif
 			return false;
 		}
+
+		// Setup Dear ImGui context
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGui::StyleColorsDark();
+		ImGui_ImplSDL2_InitForOpenGL(
+			sdl_window_,
+			sdl_gl_context_);
+		char* glsl_version = "#version 430";
+		ImGui_ImplOpenGL3_Init(glsl_version);
+
 		return true;
 	}
 
@@ -279,13 +295,9 @@ namespace SoftwareGL {
 		// While Run return true continue.
 		bool loop = true;
 		double previous_count = 0.0f;
-		double redraw_window_title = 0.0f;
-		const double redraw_window_delta = 0.01f;
-		double frame_count = 0.f;
-		const size_t array_length = 10;
-		std::array<double, array_length> fps_stats = { 0.1 };
 		// Timing counter.
 		static auto start = std::chrono::system_clock::now();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		do 
 		{
 			// Compute the time difference from previous frame.
@@ -295,40 +307,50 @@ namespace SoftwareGL {
 			SDL_Event event;
 			if (SDL_PollEvent(&event))
 			{
+				ImGui_ImplSDL2_ProcessEvent(&event);
 				if (!window_interface_->RunEvent(event))
 				{
 					loop = false;
 					continue;
 				}
 			}
+
+			// Start the Dear ImGui frame
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplSDL2_NewFrame(sdl_window_);
+			ImGui::NewFrame();
+
 			if (!window_interface_->RunCompute(time.count() - previous_count))
 			{
 				loop = false;
 				continue;
 			}
 			PostRunCompute();
-			const double window_delta = time.count() - redraw_window_title;
-			++frame_count;
-			if (window_delta > redraw_window_delta)
+
 			{
-				static size_t counter = 0;
-				// Compute the approximate fps at instant t.
-				fps_stats[++counter % array_length] =
-					frame_count * (1. / window_delta);
-				// Make an average on a number of sub values.
-				double fps_value = std::accumulate(
-					fps_stats.begin(), 
-					fps_stats.end(), 
-					0.0) / (double)fps_stats.size();
-				std::ostringstream oss;
-				oss << "Shader GL - ["
-					<< fps_value
-					<< "]FPS";
-				SDL_SetWindowTitle(sdl_window_, oss.str().c_str());
-				redraw_window_title = time.count();
-				frame_count = 0;
+				static float f = 0.0f;
+				static int counter = 0;
+
+				ImGui::Begin("Hello, world!");
+				ImGui::Text("This is some useful text.");
+
+				ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+				if (ImGui::Button("Button"))
+					counter++;
+				ImGui::SameLine();
+				ImGui::Text("counter = %d", counter);
+
+				ImGui::Text(
+					"Application average %.3f ms/frame (%.1f FPS)", 
+					1000.0f / ImGui::GetIO().Framerate, 
+					ImGui::GetIO().Framerate);
+				ImGui::Text("Application is %f, %f", display_width, display_height);
+				ImGui::End();
 			}
+
 			previous_count = time.count();
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 			SDL_GL_SwapWindow(sdl_window_);
 		} 
 		while (loop);
@@ -336,6 +358,7 @@ namespace SoftwareGL {
 		// Cleanup.
 		SDL_GL_DeleteContext(sdl_gl_context_);
 		SDL_DestroyWindow(sdl_window_);
+		SDL_Quit();
 	}
 
 }	// End of namespace SoftwareGL.
