@@ -328,24 +328,41 @@ namespace SoftwareGL {
 			PostRunCompute();
 
 			{
+				const ImU32 flags = 
+					ImGuiWindowFlags_NoTitleBar | 
+					ImGuiWindowFlags_NoResize | 
+					ImGuiWindowFlags_NoMove;
+
 				static float f = 0.0f;
 				static int counter = 0;
+				static ImVec4 my_color{ .4f, 0.f, .4f, .5f };
 
-				ImGui::Begin("Hello, world!");
-				ImGui::Text("This is some useful text.");
+				float display_width = (float)io.DisplaySize.x;
+				float display_height = (float)io.DisplaySize.y;
 
-				ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-				if (ImGui::Button("Button"))
-					counter++;
-				ImGui::SameLine();
-				ImGui::Text("counter = %d", counter);
-
+				ImGui::SetNextWindowPos(
+					ImVec2(display_width, display_height), 
+					ImGuiCond_Always, 
+					ImVec2(1.f, 1.f));
+				ImGui::SetNextWindowSize(ImVec2(340, 120), ImGuiCond_Always);
+				ImGui::PushStyleColor(ImGuiCol_WindowBg,my_color);
+				ImGui::Begin("Hello, world!", nullptr, flags);
+				if (ImGui::CollapsingHeader("test"))
+				{
+					ImGui::Text("This is some useful text.");
+					ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+					if (ImGui::Button("Button")) counter++;
+					ImGui::SameLine();
+					ImGui::Text("counter = %d", counter);
+				}
+				
 				ImGui::Text(
 					"Application average %.3f ms/frame (%.1f FPS)", 
 					1000.0f / ImGui::GetIO().Framerate, 
 					ImGui::GetIO().Framerate);
-				ImGui::Text("Application is %f, %f", display_width, display_height);
+				ImGui::ColorEdit4("Color", &my_color.x);
 				ImGui::End();
+				ImGui::PopStyleColor();
 			}
 
 			previous_count = time.count();
