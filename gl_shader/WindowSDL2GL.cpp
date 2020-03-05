@@ -28,6 +28,7 @@
 
 namespace SoftwareGL {
 
+#if !defined(__APPLE__)
 	void GLAPIENTRY WindowSDL2GL::ErrorMessageHandler(
 		GLenum source,
 		GLenum type,
@@ -86,6 +87,7 @@ namespace SoftwareGL {
 		std::cout << "OpenGL Error: " << oss.str() << std::endl;
 #endif
 	}
+#endif
 
 	WindowSDL2GL::WindowSDL2GL(
 		std::shared_ptr<WindowInterface> window_interface) :
@@ -137,9 +139,7 @@ namespace SoftwareGL {
 	void WindowSDL2GL::PostRunCompute()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		texture1_->Bind(0);
-
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
 		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 	}
@@ -173,7 +173,7 @@ namespace SoftwareGL {
 #endif
 			return false;
 		}
-#if _DEBUG
+#if _DEBUG && !defined(__APPLE__)
 		// Enable error message.
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(WindowSDL2GL::ErrorMessageHandler, nullptr);

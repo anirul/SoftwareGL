@@ -7,7 +7,9 @@ endif(WIN32)
 project(SoftwareGL)
 
 find_package(SDL2 CONFIG REQUIRED)
-find_package(GLEW REQUIRED)
+if(NOT APPLE)
+    find_package(GLEW REQUIRED)
+endif(NOT APPLE)
 
 add_library(software_gl STATIC
     ${PROJECT_SOURCE_DIR}/software_gl/Mesh.h
@@ -25,10 +27,18 @@ add_library(software_gl STATIC
     ${PROJECT_SOURCE_DIR}/software_gl/Renderer.cpp
 )
 
-target_link_libraries(software_gl PRIVATE
-    SDL2::SDL2
-    GLEW::GLEW
-)
+if (NOT APPLE)
+    target_link_libraries(software_gl 
+      PRIVATE
+        SDL2::SDL2
+        GLEW::GLEW
+    )
+else()
+    target_link_libraries(software_gl
+      PRIVATE
+        SDL2::SDL2
+    )
+endif()
 
 add_executable(software WIN32
     ${PROJECT_SOURCE_DIR}/software/main.cpp
@@ -39,11 +49,20 @@ add_executable(software WIN32
     ${PROJECT_SOURCE_DIR}/software/WindowSDL2GL.h
 )
 
-target_link_libraries(software PRIVATE
-    software_gl
-    SDL2::SDL2
-    GLEW::GLEW
-)
+if (NOT APPLE)
+    target_link_libraries(software 
+      PRIVATE
+        software_gl
+        SDL2::SDL2
+        GLEW::GLEW
+    )
+else()
+    target_link_libraries(software 
+      PRIVATE
+        software_gl
+        SDL2::SDL2
+    )
+endif()
 
 add_executable(gl_shader WIN32
     ${PROJECT_SOURCE_DIR}/gl_shader/main.cpp
@@ -60,8 +79,15 @@ add_executable(gl_shader WIN32
 	${PROJECT_SOURCE_DIR}/asset/fragment.glsl
 )
 
-target_link_libraries(gl_shader PRIVATE
-    software_gl
-	SDL2::SDL2
-    GLEW::GLEW
-)
+if (NOT APPLE)
+    target_link_libraries(gl_shader PRIVATE
+        software_gl
+	    SDL2::SDL2
+        GLEW::GLEW
+    )
+else()
+    target_link_libraries(gl_shader PRIVATE
+        software_gl
+	    SDL2::SDL2
+    )
+endif()

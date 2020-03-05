@@ -22,6 +22,7 @@ namespace SoftwareGL {
 
 	protected:
 		void PostRunCompute();
+#if !defined(__APPLE__)
 		static void GLAPIENTRY ErrorMessageHandler(
 			GLenum source,
 			GLenum type,
@@ -30,6 +31,7 @@ namespace SoftwareGL {
 			GLsizei length,
 			const GLchar* message,
 			const void* userParam);
+#endif
 
 	private:
 		std::shared_ptr<WindowInterface> window_interface_;
