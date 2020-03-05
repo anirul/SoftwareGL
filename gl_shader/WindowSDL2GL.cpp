@@ -15,14 +15,24 @@
 #include <imgui.h>
 #include "../imgui/imgui_impl_sdl.h"
 #include "../imgui/imgui_impl_opengl3.h"
-#include <GL/glew.h>
 #include <SDL.h>
-
+#ifdef __APPLE__
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glu.h>
+#else
+	#include <GL/glew.h>
+#endif
+#include <sdl2/SDL.h>
+#if defined(_WIN32) || defined(_WIN64)
+	#include <sdl2/SDL_syswm.h>
+#endif
 #include "Shader.h"
 #include "WindowSDL2GL.h"
+#include "Texture.h"
 
 namespace SoftwareGL {
 
+#if !defined(__APPLE__)
 	void GLAPIENTRY WindowSDL2GL::ErrorMessageHandler(
 		GLenum source,
 		GLenum type,
@@ -32,7 +42,9 @@ namespace SoftwareGL {
 		const GLchar* message,
 		const void* userParam) 
 	{
-		if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
+		// Remove notifications.
+ 		if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) 
+ 			return;
 		std::ostringstream oss;
 		oss << "message\t: " << message << std::endl;
 		oss << "type\t: ";
@@ -74,38 +86,25 @@ namespace SoftwareGL {
 		}
 		oss << std::endl;
 #if defined(_WIN32) || defined(_WIN64)
-		MessageBox(NULL, oss.str().c_str(),	"OpenGL Error",	0);
+		MessageBox(nullptr, oss.str().c_str(), "OpenGL Error", 0);
 #else
 		std::cout << "OpenGL Error: " << oss.str() << std::endl;
 #endif
 	}
+#endif
 
 	WindowSDL2GL::WindowSDL2GL(
 		std::shared_ptr<WindowInterface> window_interface) :
-		window_interface_(window_interface) {}
-
-	WindowSDL2GL::~WindowSDL2GL()
-	{
-		SDL_Quit();
-	}
-
-	void WindowSDL2GL::PostRunCompute()
-	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
-	}
-
-	bool WindowSDL2GL::Startup()
+		window_interface_(window_interface) 
 	{
 		if (SDL_Init(SDL_INIT_VIDEO) != 0)
 		{
 #if defined(_WIN32) || defined(_WIN64)
-			MessageBox(NULL, "Couldn't initialize SDL.", "Software GL", 0);
+			MessageBox(nullptr, "Couldn't initialize SDL.", "Software GL", 0);
 #else
 			std::cout << "Couldn't initialize SDL." << std::endl;
 #endif
-			return false;
+			throw std::runtime_error("Couldn't initialize SDL.");
 		}
 		const auto p_size = window_interface_->GetWindowSize();
 		sdl_window_ = SDL_CreateWindow(
@@ -119,22 +118,49 @@ namespace SoftwareGL {
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
-				NULL,
+				nullptr,
 				"Couldn't start a window in SDL.",
 				"Software GL",
 				0);
 #else
 			std::cout << "Couldn't start a window in SDL." << std::endl;
 #endif
-			return false;
+			throw std::runtime_error("Couldn't start a window in SDL.");
 		}
+#if defined(_WIN32) || defined(_WIN64)
+		SDL_SysWMinfo wmInfo;
+		SDL_VERSION(&wmInfo.version);
+		SDL_GetWindowWMInfo(sdl_window_, &wmInfo);
+		hwnd_ = wmInfo.info.win.window;
+#endif
+	}
+
+	WindowSDL2GL::~WindowSDL2GL()
+	{
+		SDL_Quit();
+	}
+
+	void WindowSDL2GL::PostRunCompute()
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		texture1_->Bind(0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+	}
+
+	bool WindowSDL2GL::Startup()
+	{
 		// GL context.
 		sdl_gl_context_ = SDL_GL_CreateContext(sdl_window_);
 		SDL_GL_SetAttribute(
 			SDL_GL_CONTEXT_PROFILE_MASK,
 			SDL_GL_CONTEXT_PROFILE_CORE);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+#if defined(__APPLE__)
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+#else
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+#endif
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major_version_);
 		SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor_version_);
@@ -146,7 +172,7 @@ namespace SoftwareGL {
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
-				NULL,
+				hwnd_,
 				"Couldn't initialize GLEW.",
 				"Shader GL Error",
 				0);
@@ -155,24 +181,33 @@ namespace SoftwareGL {
 #endif
 			return false;
 		}
-#if _DEBUG
+#if _DEBUG && !defined(__APPLE__)
 		// Enable error message.
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(WindowSDL2GL::ErrorMessageHandler, nullptr);
 #endif
 
 		// Points and color initialization.
-		float points[] = {
+		float points[] = 
+		{
 			0.0f, 0.5f, 0.0f,
 			0.5f, -.5f, 0.0f,
 			-.5f, -.5f, 0.0f,
 		};
-		float colors[] = {
+		float colors[] = 
+		{
 			1.0f, 0.0f, 0.0f,
 			0.0f, 1.0f, 0.0f,
 			0.0f, 0.0f, 1.0f,
 		};
-		unsigned int indices[] = {
+		float texture_coordinates[] = 
+		{
+			0.5f, 0.0f,
+			0.0f, 1.0f,
+			1.0f, 1.0f,
+		};
+		unsigned int indices[] = 
+		{
 			0, 2, 1
 		};
 
@@ -196,6 +231,16 @@ namespace SoftwareGL {
 			colors,
 			GL_STATIC_DRAW);
 
+		// Texture coordinates buffer initialization.
+		GLuint texture_coordinate_object = 0;
+		glGenBuffers(1, &texture_coordinate_object);
+		glBindBuffer(GL_ARRAY_BUFFER, texture_coordinate_object);
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			6 * sizeof(float),
+			texture_coordinates,
+			GL_STATIC_DRAW);
+
 		// Index buffer array.
 		glGenBuffers(1, &index_buffer_object_);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
@@ -210,13 +255,16 @@ namespace SoftwareGL {
 		glGenVertexArrays(1, &vertex_attribute_object);
 		glBindVertexArray(vertex_attribute_object);
 		glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 		glBindBuffer(GL_ARRAY_BUFFER, color_buffer_object);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+		glBindBuffer(GL_ARRAY_BUFFER, texture_coordinate_object);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 		// Enable vertex attrib array.
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
 
 		// Vertex Shader program.
 		OpenGL::Shader vertex_shader(GL_VERTEX_SHADER);
@@ -224,7 +272,7 @@ namespace SoftwareGL {
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
-				NULL, 
+				hwnd_, 
 				vertex_shader.GetErrorMessage().c_str(), 
 				"Vertex shader Error", 
 				0);
@@ -243,7 +291,7 @@ namespace SoftwareGL {
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
-				NULL,
+				hwnd_,
 				fragment_shader.GetErrorMessage().c_str(),
 				"Fragment shader Error",
 				0);
@@ -263,6 +311,19 @@ namespace SoftwareGL {
 		glLinkProgram(shader_program_);
 		glUseProgram(shader_program_);
 
+		// Bind the texture to the shader.
+		const unsigned int slot = 0;
+		texture1_ = std::make_shared<OpenGL::Texture>(
+			"../asset/PaintedMetal05_col.tga");
+		texture1_->Bind(slot);
+		glUniform1i(
+			glGetUniformLocation(shader_program_, "texture1"), 
+			slot);
+
+		// Enable blending to 1 - source alpha.
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		// Start the user part of the window.
 		// FIXME(anirul): This should be done before.
 		if (!window_interface_->Startup({ major_version_, minor_version_ })) {
@@ -270,7 +331,7 @@ namespace SoftwareGL {
 				std::to_string(major_version_) + ", " +
 				std::to_string(minor_version_) + ")";
 #if defined(_WIN32) || defined(_WIN64)
-			MessageBox(NULL, error.c_str(), "Fragment shader Error", 0);
+			MessageBox(hwnd_, error.c_str(), "Fragment shader Error", 0);
 #else
 			std::cout << "Fragment shader Error: " << error << std::endl;
 #endif
@@ -297,7 +358,6 @@ namespace SoftwareGL {
 		double previous_count = 0.0f;
 		// Timing counter.
 		static auto start = std::chrono::system_clock::now();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		do 
 		{
 			// Compute the time difference from previous frame.
@@ -315,59 +375,14 @@ namespace SoftwareGL {
 				}
 			}
 
-			// Start the Dear ImGui frame
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplSDL2_NewFrame(sdl_window_);
-			ImGui::NewFrame();
-
 			if (!window_interface_->RunCompute(time.count() - previous_count))
 			{
 				loop = false;
 				continue;
 			}
 			PostRunCompute();
-
-			{
-				const ImU32 flags = 
-					ImGuiWindowFlags_NoTitleBar | 
-					ImGuiWindowFlags_NoResize | 
-					ImGuiWindowFlags_NoMove;
-
-				static float f = 0.0f;
-				static int counter = 0;
-				static ImVec4 my_color{ .4f, 0.f, .4f, .5f };
-
-				float display_width = (float)io.DisplaySize.x;
-				float display_height = (float)io.DisplaySize.y;
-
-				ImGui::SetNextWindowPos(
-					ImVec2(display_width, display_height), 
-					ImGuiCond_Always, 
-					ImVec2(1.f, 1.f));
-				ImGui::SetNextWindowSize(ImVec2(340, 120), ImGuiCond_Always);
-				ImGui::PushStyleColor(ImGuiCol_WindowBg,my_color);
-				ImGui::Begin("Hello, world!", nullptr, flags);
-				if (ImGui::CollapsingHeader("test"))
-				{
-					ImGui::Text("This is some useful text.");
-					ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-					if (ImGui::Button("Button")) counter++;
-					ImGui::SameLine();
-					ImGui::Text("counter = %d", counter);
-				}
-				
-				ImGui::Text(
-					"Application average %.3f ms/frame (%.1f FPS)", 
-					1000.0f / ImGui::GetIO().Framerate, 
-					ImGui::GetIO().Framerate);
-				ImGui::ColorEdit4("Color", &my_color.x);
-				ImGui::End();
-				ImGui::PopStyleColor();
-			}
-
 			previous_count = time.count();
-			ImGui::Render();
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			DrawImGui();
 			SDL_GL_SwapWindow(sdl_window_);
 		} 
 		while (loop);
@@ -376,6 +391,54 @@ namespace SoftwareGL {
 		SDL_GL_DeleteContext(sdl_gl_context_);
 		SDL_DestroyWindow(sdl_window_);
 		SDL_Quit();
+	}
+
+	void WindowSDL2GL::DrawImGui()
+	{
+		// Create a global io variable.
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		// Start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplSDL2_NewFrame(sdl_window_);
+		ImGui::NewFrame();
+
+		const ImU32 flags =
+			ImGuiWindowFlags_NoTitleBar |
+			ImGuiWindowFlags_NoResize |
+			ImGuiWindowFlags_NoMove;
+
+		static float f = 0.0f;
+		static int counter = 0;
+		static ImVec4 my_color{ .4f, 0.f, .4f, .5f };
+
+		float display_width = (float)io.DisplaySize.x;
+		float display_height = (float)io.DisplaySize.y;
+
+		ImGui::SetNextWindowPos(
+			ImVec2(display_width, display_height),
+			ImGuiCond_Always,
+			ImVec2(1.f, 1.f));
+		ImGui::SetNextWindowSize(ImVec2(340, 120), ImGuiCond_Always);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, my_color);
+		ImGui::Begin("Hello, world!", nullptr, flags);
+		if (ImGui::CollapsingHeader("test"))
+		{
+			ImGui::Text("This is some useful text.");
+			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+			if (ImGui::Button("Button")) counter++;
+			ImGui::SameLine();
+			ImGui::Text("counter = %d", counter);
+		}
+
+		ImGui::Text(
+			"Application average %.3f ms/frame (%.1f FPS)",
+			1000.0f / ImGui::GetIO().Framerate,
+			ImGui::GetIO().Framerate);
+		ImGui::ColorEdit4("Color", &my_color.x);
+		ImGui::End();
+		ImGui::PopStyleColor();
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 
 }	// End of namespace SoftwareGL.

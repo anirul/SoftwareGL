@@ -44,9 +44,7 @@ namespace OpenGL {
 			error_message_ = "Could not open file: " + path;
 			return false;
 		}
-		std::string str(
-			(std::istreambuf_iterator<char>(ifs)),
-			std::istreambuf_iterator<char>());
+		std::string str(std::istreambuf_iterator<char>(ifs), {});
 		return LoadFromSource(str);
 	}
 

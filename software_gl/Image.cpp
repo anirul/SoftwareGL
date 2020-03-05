@@ -62,7 +62,7 @@ namespace SoftwareGL {
 		{
 			if (header.bits == 24)
 			{
-				for_each(begin(), end(), [&ifs](VectorMath::vector& v) 
+				std::for_each(begin(), end(), [&ifs](VectorMath::vector& v) 
 				{
 					uint8_t r;
 					uint8_t g;
@@ -78,7 +78,7 @@ namespace SoftwareGL {
 			}
 			else if (header.bits == 32)
 			{
-				for_each(begin(), end(), [&ifs](VectorMath::vector& v)
+				std::for_each(begin(), end(), [&ifs](VectorMath::vector& v)
 				{
 					uint8_t r;
 					uint8_t g;

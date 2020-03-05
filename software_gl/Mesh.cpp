@@ -21,7 +21,7 @@ namespace SoftwareGL {
 		while (!ifs.eof()) {
 			std::string line = "";
 			if (!std::getline(ifs, line)) break;
-			if (line == "") continue;
+			if (line.empty()) continue;
 			std::istringstream iss(line);
 			std::string dump;
 			if (!(iss >> dump))	return false;
@@ -80,7 +80,7 @@ namespace SoftwareGL {
 					{
 						std::string inner_val;
 						std::getline(viss, inner_val, '/');
-						if (inner_val.size() > 0)
+						if (!inner_val.empty())
 						{
 							i = atoi(inner_val.c_str()) - 1;
 						}

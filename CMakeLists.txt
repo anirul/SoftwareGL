@@ -8,8 +8,10 @@ set(CMAKE_CXX_STANDARD 17)
 project(SoftwareGL)
 
 find_package(SDL2 CONFIG REQUIRED)
-find_package(GLEW REQUIRED)
 find_package(imgui CONFIG REQUIRED)
+if(NOT APPLE)
+    find_package(GLEW REQUIRED)
+endif(NOT APPLE)
 
 add_library(software_gl
   STATIC
@@ -28,12 +30,20 @@ add_library(software_gl
     ${PROJECT_SOURCE_DIR}/software_gl/Renderer.cpp
 )
 
-target_link_libraries(software_gl
-  PRIVATE
-    SDL2::SDL2
-    GLEW::GLEW
-    imgui::imgui
-)
+if (NOT APPLE)
+    target_link_libraries(software_gl 
+      PRIVATE
+        SDL2::SDL2
+        GLEW::GLEW
+        imgui::imgui
+    )
+else()
+    target_link_libraries(software_gl
+      PRIVATE
+        SDL2::SDL2
+        imgui::imgui
+    )
+endif()
 
 add_library(imgui_impl
   STATIC
@@ -43,11 +53,18 @@ add_library(imgui_impl
     ${PROJECT_SOURCE_DIR}/imgui/imgui_impl_opengl3.cpp
 )
 
-target_link_libraries(imgui_impl 
-  PRIVATE
-    SDL2::SDL2
-    GLEW::GLEW
-)
+if (NOT APPLE)
+    target_link_libraries(imgui_impl 
+      PRIVATE
+        SDL2::SDL2
+        GLEW::GLEW
+    )
+else()
+    target_link_libraries(imgui_impl 
+      PRIVATE
+        SDL2::SDL2
+    )
+endif()
 
 add_executable(software 
   WIN32
@@ -59,14 +76,25 @@ add_executable(software
     ${PROJECT_SOURCE_DIR}/software/WindowSDL2GL.h
 )
 
-target_link_libraries(software
-  PUBLIC
-    software_gl
-  PRIVATE
-    SDL2::SDL2
-    GLEW::GLEW
-    imgui::imgui
-)
+
+if (NOT APPLE)
+    target_link_libraries(software 
+      PUBLIC
+        software_gl
+      PRIVATE
+        SDL2::SDL2
+        GLEW::GLEW
+        imgui::imgui
+    )
+else()
+    target_link_libraries(software 
+      PUBLIC
+        software_gl
+      PRIVATE
+        SDL2::SDL2
+        imgui::imgui
+    )
+endif()
 
 add_executable(gl_shader 
   WIN32
@@ -78,16 +106,29 @@ add_executable(gl_shader
     ${PROJECT_SOURCE_DIR}/gl_shader/WindowSDL2GL.h
     ${PROJECT_SOURCE_DIR}/gl_shader/Shader.h
     ${PROJECT_SOURCE_DIR}/gl_shader/Shader.cpp
-    ${PROJECT_SOURCE_DIR}/asset/vertex.glsl
-    ${PROJECT_SOURCE_DIR}/asset/fragment.glsl
+    ${PROJECT_SOURCE_DIR}/gl_shader/Texture.h
+    ${PROJECT_SOURCE_DIR}/gl_shader/Texture.cpp
+	${PROJECT_SOURCE_DIR}/asset/vertex.glsl
+	${PROJECT_SOURCE_DIR}/asset/fragment.glsl
 )
 
-target_link_libraries(gl_shader
-  PUBLIC
-    software_gl
-    imgui_impl
-  PRIVATE
-    SDL2::SDL2
-    GLEW::GLEW
-    imgui::imgui
-)
+if (NOT APPLE)
+    target_link_libraries(gl_shader 
+      PUBLIC
+        software_gl
+        imgui_impl
+      PRIVATE
+        software_gl
+	    SDL2::SDL2
+        GLEW::GLEW
+    )
+else()
+    target_link_libraries(gl_shader 
+      PUBLIC
+        software_gl
+        imgui_impl
+      PRIVATE
+        software_gl
+	    SDL2::SDL2
+    )
+endif()
