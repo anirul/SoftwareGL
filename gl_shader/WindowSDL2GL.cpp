@@ -12,11 +12,19 @@
 #include <algorithm>
 #include <numeric>
 #include <functional>
-#include <GL/glew.h>
-#include <SDL.h>
-
+#ifdef __APPLE__
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glu.h>
+#else
+	#include <GL/glew.h>
+#endif
+#include <sdl2/SDL.h>
+#if defined(_WIN32) || defined(_WIN64)
+	#include <sdl2/SDL_syswm.h>
+#endif
 #include "Shader.h"
 #include "WindowSDL2GL.h"
+#include "Texture.h"
 
 namespace SoftwareGL {
 
@@ -29,6 +37,9 @@ namespace SoftwareGL {
 		const GLchar* message,
 		const void* userParam) 
 	{
+		// Remove notifications.
+ 		if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) 
+ 			return;
 		std::ostringstream oss;
 		oss << "message\t: " << message << std::endl;
 		oss << "type\t: ";
@@ -70,7 +81,7 @@ namespace SoftwareGL {
 		}
 		oss << std::endl;
 #if defined(_WIN32) || defined(_WIN64)
-		MessageBox(NULL, oss.str().c_str(),	"OpenGL Error",	0);
+		MessageBox(nullptr, oss.str().c_str(), "OpenGL Error", 0);
 #else
 		std::cout << "OpenGL Error: " << oss.str() << std::endl;
 #endif
@@ -78,30 +89,16 @@ namespace SoftwareGL {
 
 	WindowSDL2GL::WindowSDL2GL(
 		std::shared_ptr<WindowInterface> window_interface) :
-		window_interface_(window_interface) {}
-
-	WindowSDL2GL::~WindowSDL2GL()
-	{
-		SDL_Quit();
-	}
-
-	void WindowSDL2GL::PostRunCompute()
-	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
-	}
-
-	bool WindowSDL2GL::Startup()
+		window_interface_(window_interface) 
 	{
 		if (SDL_Init(SDL_INIT_VIDEO) != 0)
 		{
 #if defined(_WIN32) || defined(_WIN64)
-			MessageBox(NULL, "Couldn't initialize SDL.", "Software GL", 0);
+			MessageBox(nullptr, "Couldn't initialize SDL.", "Software GL", 0);
 #else
 			std::cout << "Couldn't initialize SDL." << std::endl;
 #endif
-			return false;
+			throw std::runtime_error("Couldn't initialize SDL.");
 		}
 		const auto p_size = window_interface_->GetWindowSize();
 		sdl_window_ = SDL_CreateWindow(
@@ -115,15 +112,40 @@ namespace SoftwareGL {
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
-				NULL,
+				nullptr,
 				"Couldn't start a window in SDL.",
 				"Software GL",
 				0);
 #else
 			std::cout << "Couldn't start a window in SDL." << std::endl;
 #endif
-			return false;
+			throw std::runtime_error("Couldn't start a window in SDL.");
 		}
+#if defined(_WIN32) || defined(_WIN64)
+		SDL_SysWMinfo wmInfo;
+		SDL_VERSION(&wmInfo.version);
+		SDL_GetWindowWMInfo(sdl_window_, &wmInfo);
+		hwnd_ = wmInfo.info.win.window;
+#endif
+	}
+
+	WindowSDL2GL::~WindowSDL2GL()
+	{
+		SDL_Quit();
+	}
+
+	void WindowSDL2GL::PostRunCompute()
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		texture1_->Bind(0);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+	}
+
+	bool WindowSDL2GL::Startup()
+	{
 		// GL context.
 		sdl_gl_context_ = SDL_GL_CreateContext(sdl_window_);
 		SDL_GL_SetAttribute(
@@ -142,7 +164,7 @@ namespace SoftwareGL {
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
-				NULL,
+				hwnd_,
 				"Couldn't initialize GLEW.",
 				"Shader GL Error",
 				0);
@@ -157,17 +179,26 @@ namespace SoftwareGL {
 		glDebugMessageCallback(WindowSDL2GL::ErrorMessageHandler, nullptr);
 #endif
 		// Points and color initialization.
-		float points[] = {
+		float points[] = 
+		{
 			0.0f, 0.5f, 0.0f,
 			0.5f, -.5f, 0.0f,
 			-.5f, -.5f, 0.0f,
 		};
-		float colors[] = {
+		float colors[] = 
+		{
 			1.0f, 0.0f, 0.0f,
 			0.0f, 1.0f, 0.0f,
 			0.0f, 0.0f, 1.0f,
 		};
-		unsigned int indices[] = {
+		float texture_coordinates[] = 
+		{
+			0.5f, 0.0f,
+			0.0f, 1.0f,
+			1.0f, 1.0f,
+		};
+		unsigned int indices[] = 
+		{
 			0, 2, 1
 		};
 
@@ -191,6 +222,16 @@ namespace SoftwareGL {
 			colors,
 			GL_STATIC_DRAW);
 
+		// Texture coordinates buffer initialization.
+		GLuint texture_coordinate_object = 0;
+		glGenBuffers(1, &texture_coordinate_object);
+		glBindBuffer(GL_ARRAY_BUFFER, texture_coordinate_object);
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			6 * sizeof(float),
+			texture_coordinates,
+			GL_STATIC_DRAW);
+
 		// Index buffer array.
 		glGenBuffers(1, &index_buffer_object_);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
@@ -205,21 +246,24 @@ namespace SoftwareGL {
 		glGenVertexArrays(1, &vertex_attribute_object);
 		glBindVertexArray(vertex_attribute_object);
 		glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 		glBindBuffer(GL_ARRAY_BUFFER, color_buffer_object);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+		glBindBuffer(GL_ARRAY_BUFFER, texture_coordinate_object);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 		// Enable vertex attrib array.
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
 
 		// Vertex Shader program.
 		OpenGL::Shader vertex_shader(GL_VERTEX_SHADER);
-		if (!vertex_shader.LoadFromFile("./vertex.glsl"))
+		if (!vertex_shader.LoadFromFile("../asset/vertex.glsl"))
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
-				NULL, 
+				hwnd_, 
 				vertex_shader.GetErrorMessage().c_str(), 
 				"Vertex shader Error", 
 				0);
@@ -234,11 +278,11 @@ namespace SoftwareGL {
 
 		// Fragment Shader program.
 		OpenGL::Shader fragment_shader(GL_FRAGMENT_SHADER);
-		if (!fragment_shader.LoadFromFile("./fragment.glsl"))
+		if (!fragment_shader.LoadFromFile("../asset/fragment.glsl"))
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
-				NULL,
+				hwnd_,
 				fragment_shader.GetErrorMessage().c_str(),
 				"Fragment shader Error",
 				0);
@@ -258,6 +302,19 @@ namespace SoftwareGL {
 		glLinkProgram(shader_program_);
 		glUseProgram(shader_program_);
 
+		// Bind the texture to the shader.
+		const unsigned int slot = 0;
+		texture1_ = std::make_shared<OpenGL::Texture>(
+			"../asset/PaintedMetal05_col.tga");
+		texture1_->Bind(slot);
+		glUniform1i(
+			glGetUniformLocation(shader_program_, "texture1"), 
+			slot);
+
+		// Enable blending to 1 - source alpha.
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		// Start the user part of the window.
 		// FIXME(anirul): This should be done before.
 		if (!window_interface_->Startup({ major_version_, minor_version_ })) {
@@ -265,7 +322,7 @@ namespace SoftwareGL {
 				std::to_string(major_version_) + ", " +
 				std::to_string(minor_version_) + ")";
 #if defined(_WIN32) || defined(_WIN64)
-			MessageBox(NULL, error.c_str(), "Fragment shader Error", 0);
+			MessageBox(hwnd_, error.c_str(), "Fragment shader Error", 0);
 #else
 			std::cout << "Fragment shader Error: " << error << std::endl;
 #endif

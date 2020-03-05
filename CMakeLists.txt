@@ -54,8 +54,10 @@ add_executable(gl_shader WIN32
     ${PROJECT_SOURCE_DIR}/gl_shader/WindowSDL2GL.h
     ${PROJECT_SOURCE_DIR}/gl_shader/Shader.h
     ${PROJECT_SOURCE_DIR}/gl_shader/Shader.cpp
-	${PROJECT_SOURCE_DIR}/build/vertex.glsl
-	${PROJECT_SOURCE_DIR}/build/fragment.glsl
+    ${PROJECT_SOURCE_DIR}/gl_shader/Texture.h
+    ${PROJECT_SOURCE_DIR}/gl_shader/Texture.cpp
+	${PROJECT_SOURCE_DIR}/asset/vertex.glsl
+	${PROJECT_SOURCE_DIR}/asset/fragment.glsl
 )
 
 target_link_libraries(gl_shader PRIVATE

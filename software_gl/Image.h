@@ -8,9 +8,10 @@
 
 namespace SoftwareGL {
 
-	class Image : public std::vector<VectorMath::vector> {
+	class Image : public std::vector<VectorMath::vector> 
+	{
 	public:
-		Image() = delete;
+		Image() : dx_(0), dy_(0), std::vector<VectorMath::vector>() {}
 		Image(size_t dx, size_t dy) : 
 			dx_(dx), 
 			dy_(dy), 
