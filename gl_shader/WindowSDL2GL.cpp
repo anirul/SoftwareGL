@@ -345,7 +345,11 @@ namespace SoftwareGL {
 		ImGui_ImplSDL2_InitForOpenGL(
 			sdl_window_,
 			sdl_gl_context_);
+#if defined(__APPLE__)
+		char* glsl_version = "#version 410";
+#else
 		char* glsl_version = "#version 430";
+#endif
 		ImGui_ImplOpenGL3_Init(glsl_version);
 
 		return true;
