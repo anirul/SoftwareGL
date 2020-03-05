@@ -3,6 +3,9 @@
 #include <memory>
 #include <utility>
 #include <SDL.h>
+#include "../software_gl/Mesh.h"
+#include "../software_gl/Camera.h"
+#include "Program.h"
 #include "Texture.h"
 #include "WindowInterface.h"
 
@@ -36,7 +39,10 @@ namespace SoftwareGL {
 
 	private:
 		std::shared_ptr<WindowInterface> window_interface_;
+		std::shared_ptr<OpenGL::Program> program_ = nullptr;
 		std::shared_ptr<OpenGL::Texture> texture1_ = nullptr;
+		std::shared_ptr<SoftwareGL::Mesh> mesh_ = nullptr;
+		std::shared_ptr<SoftwareGL::Camera> camera_ = nullptr;
 		SDL_Window* sdl_window_ = nullptr;
 		SDL_GLContext sdl_gl_context_ = nullptr;
 		GLuint vertex_array_object_ = 0;

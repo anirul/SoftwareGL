@@ -24,6 +24,8 @@ namespace SoftwareGL {
 			texture_(texture) {}
 		Vertex(const Vertex&) = default;
 		Vertex& operator=(const Vertex& v) = default;
+		bool operator==(const Vertex& v) const;
+		bool operator<(const Vertex& v) const;
 
 	public:
 		// Basic accessors.
@@ -43,6 +45,13 @@ namespace SoftwareGL {
 		const float GetY() const { return position_.y; }
 		const float GetZ() const { return position_.z; }
 		const float GetW() const { return position_.w; }
+		// Get a vector of all the important float.
+		const std::vector<float> GetVector() const {
+			return { position_.x, position_.y, position_.z,
+				color_.x, color_.y, color_.z,
+				normal_.x, normal_.y, normal_.z,
+				texture_.x, texture_.y };
+		}
 
 	protected:
 		VectorMath::vector4 position_ = { 0, 0, 0, 1 };
@@ -50,5 +59,19 @@ namespace SoftwareGL {
 		VectorMath::vector4 normal_ = { 0, 0, 0, 0 };
 		VectorMath::vector3 texture_ = { 0, 0, 1 };
 	};
+
+	inline bool Vertex::operator==(const Vertex& v) const
+	{
+		if (position_ != v.position_) return false;
+		if (color_ != v.color_) return false;
+		if (normal_ != v.normal_) return false;
+		if (texture_ != v.texture_) return false;
+		return true;
+	}
+
+	inline bool Vertex::operator<(const Vertex& v) const
+	{
+		return GetVector() < v.GetVector();
+	}
 
 }	// End of namespace SoftwareGL.

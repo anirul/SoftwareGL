@@ -106,6 +106,8 @@ add_executable(gl_shader
     ${PROJECT_SOURCE_DIR}/gl_shader/WindowSDL2GL.h
     ${PROJECT_SOURCE_DIR}/gl_shader/Shader.h
     ${PROJECT_SOURCE_DIR}/gl_shader/Shader.cpp
+    ${PROJECT_SOURCE_DIR}/gl_shader/Program.h
+    ${PROJECT_SOURCE_DIR}/gl_shader/Program.cpp
     ${PROJECT_SOURCE_DIR}/gl_shader/Texture.h
     ${PROJECT_SOURCE_DIR}/gl_shader/Texture.cpp
 	${PROJECT_SOURCE_DIR}/asset/vertex.glsl

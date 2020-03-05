@@ -13,16 +13,16 @@
 #include <numeric>
 #include <functional>
 #include <imgui.h>
+#include <set>
 #include "../imgui/imgui_impl_sdl.h"
 #include "../imgui/imgui_impl_opengl3.h"
-#include <SDL.h>
+#include <sdl2/SDL.h>
 #ifdef __APPLE__
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 #else
 	#include <GL/glew.h>
 #endif
-#include <sdl2/SDL.h>
 #if defined(_WIN32) || defined(_WIN64)
 	#include <sdl2/SDL_syswm.h>
 #endif
@@ -100,11 +100,11 @@ namespace SoftwareGL {
 		if (SDL_Init(SDL_INIT_VIDEO) != 0)
 		{
 #if defined(_WIN32) || defined(_WIN64)
-			MessageBox(nullptr, "Couldn't initialize SDL.", "Software GL", 0);
+			MessageBox(nullptr, "Couldn't initialize SDL2.", "Software GL", 0);
 #else
-			std::cout << "Couldn't initialize SDL." << std::endl;
+			std::cout << "Couldn't initialize SDL2." << std::endl;
 #endif
-			throw std::runtime_error("Couldn't initialize SDL.");
+			throw std::runtime_error("Couldn't initialize SDL2.");
 		}
 		const auto p_size = window_interface_->GetWindowSize();
 		sdl_window_ = SDL_CreateWindow(
@@ -119,13 +119,13 @@ namespace SoftwareGL {
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
 				nullptr,
-				"Couldn't start a window in SDL.",
+				"Couldn't start a window in SDL2.",
 				"Software GL",
 				0);
 #else
-			std::cout << "Couldn't start a window in SDL." << std::endl;
+			std::cout << "Couldn't start a window in SDL2." << std::endl;
 #endif
-			throw std::runtime_error("Couldn't start a window in SDL.");
+			throw std::runtime_error("Couldn't start a window in SDL2.");
 		}
 #if defined(_WIN32) || defined(_WIN64)
 		SDL_SysWMinfo wmInfo;
@@ -142,10 +142,15 @@ namespace SoftwareGL {
 
 	void WindowSDL2GL::PostRunCompute()
 	{
+		glClearColor(.2f, 0.f, .2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		texture1_->Bind(0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(
+			GL_TRIANGLES, 
+			static_cast<GLsizei>(mesh_->GetIndices().size() * 3), 
+			GL_UNSIGNED_INT, 
+			nullptr);
 	}
 
 	bool WindowSDL2GL::Startup()
@@ -186,69 +191,101 @@ namespace SoftwareGL {
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(WindowSDL2GL::ErrorMessageHandler, nullptr);
 #endif
+		// Mesh creation.
+		mesh_ = std::make_shared<SoftwareGL::Mesh>();
+		mesh_->LoadFromObj("../asset/TorusUVNormal.obj");
 
-		// Points and color initialization.
-		float points[] = 
+		std::vector<float> points;
+		std::vector<float> normals;
+		std::vector<float> texels;
+		std::vector<unsigned int> indices;
 		{
-			0.0f, 0.5f, 0.0f,
-			0.5f, -.5f, 0.0f,
-			-.5f, -.5f, 0.0f,
-		};
-		float colors[] = 
-		{
-			1.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 1.0f,
-		};
-		float texture_coordinates[] = 
-		{
-			0.5f, 0.0f,
-			0.0f, 1.0f,
-			1.0f, 1.0f,
-		};
-		unsigned int indices[] = 
-		{
-			0, 2, 1
-		};
+			std::vector<SoftwareGL::Vertex> vertices;
+			for (const SoftwareGL::Triangle& triangle : *mesh_)
+			{
+				auto lambda = [&vertices](const Vertex& v)
+				{
+					auto next = 
+						static_cast<unsigned int>(vertices.size());
+					auto it = std::find(vertices.begin(), vertices.end(), v);
+					if (it == vertices.end())
+					{
+						vertices.push_back(v);
+					}
+					else
+					{
+						next = 
+							static_cast<unsigned int>(
+								std::distance(vertices.begin(), it));
+					}
+					return next;
+				};
+				indices.push_back(lambda(triangle.GetV1()));
+				indices.push_back(lambda(triangle.GetV2()));
+				indices.push_back(lambda(triangle.GetV3()));
+			}
+			for (const SoftwareGL::Vertex& vertex : vertices)
+			{
+				auto point = vertex.GetPosition();
+				auto normal = vertex.GetNormal();
+				auto texel = vertex.GetTexture();
+				points.push_back(point.x);
+				points.push_back(point.y);
+				points.push_back(point.z);
+				normals.push_back(normal.x);
+				normals.push_back(normal.y);
+				normals.push_back(normal.z);
+				texels.push_back(texel.x);
+				texels.push_back(texel.y);
+			}
+		}
 
 		// Position buffer initialization.
 		GLuint point_buffer_object = 0;
-		glGenBuffers(1, &point_buffer_object);
-		glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
-		glBufferData(
-			GL_ARRAY_BUFFER,
-			9 * sizeof(float),
-			points,
-			GL_STATIC_DRAW);
+		{
+			glGenBuffers(1, &point_buffer_object);
+			glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
+			glBufferData(
+				GL_ARRAY_BUFFER,
+				points.size() * sizeof(float),
+				points.data(),
+				GL_STATIC_DRAW);
+		}
 
 		// Color buffer initialization.
-		GLuint color_buffer_object = 0;
-		glGenBuffers(1, &color_buffer_object);
-		glBindBuffer(GL_ARRAY_BUFFER, color_buffer_object);
-		glBufferData(
-			GL_ARRAY_BUFFER,
-			9 * sizeof(float),
-			colors,
-			GL_STATIC_DRAW);
+		GLuint normal_buffer_object = 0;
+		{
+			glGenBuffers(1, &normal_buffer_object);
+			glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_object);
+			glBufferData(
+				GL_ARRAY_BUFFER,
+				normals.size() * sizeof(float),
+				normals.data(),
+				GL_STATIC_DRAW);
+		}
 
 		// Texture coordinates buffer initialization.
-		GLuint texture_coordinate_object = 0;
-		glGenBuffers(1, &texture_coordinate_object);
-		glBindBuffer(GL_ARRAY_BUFFER, texture_coordinate_object);
-		glBufferData(
-			GL_ARRAY_BUFFER,
-			6 * sizeof(float),
-			texture_coordinates,
-			GL_STATIC_DRAW);
+		GLuint texcoor_buffer_object = 0;
+		{
+			glGenBuffers(1, &texcoor_buffer_object);
+			glBindBuffer(GL_ARRAY_BUFFER, texcoor_buffer_object);
+			glBufferData(
+				GL_ARRAY_BUFFER,
+				texels.size() * sizeof(float),
+				texels.data(),
+				GL_STATIC_DRAW);
+		}
 
 		// Index buffer array.
-		glGenBuffers(1, &index_buffer_object_);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
-		glBufferData(
-			GL_ELEMENT_ARRAY_BUFFER,
-			3 * sizeof(unsigned int), 
-			indices, 
-			GL_STATIC_DRAW);
+		{
+			glGenBuffers(1, &index_buffer_object_);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
+			glBufferData(
+				GL_ELEMENT_ARRAY_BUFFER,
+				indices.size() * sizeof(unsigned int),
+				indices.data(),
+				GL_STATIC_DRAW);
+		}
 
 		// Vertex attribute initialization.
 		GLuint vertex_attribute_object = 0;
@@ -256,9 +293,9 @@ namespace SoftwareGL {
 		glBindVertexArray(vertex_attribute_object);
 		glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-		glBindBuffer(GL_ARRAY_BUFFER, color_buffer_object);
+		glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_object);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-		glBindBuffer(GL_ARRAY_BUFFER, texture_coordinate_object);
+		glBindBuffer(GL_ARRAY_BUFFER, texcoor_buffer_object);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 		// Enable vertex attrib array.
@@ -305,24 +342,39 @@ namespace SoftwareGL {
 		}
 
 		// Create the program.
-		shader_program_ = glCreateProgram();
-		glAttachShader(shader_program_, fragment_shader.GetId());
-		glAttachShader(shader_program_, vertex_shader.GetId());
-		glLinkProgram(shader_program_);
-		glUseProgram(shader_program_);
-
+		program_ = std::make_shared<OpenGL::Program>(
+			vertex_shader, 
+			fragment_shader);
+		program_->Use();
+		
 		// Bind the texture to the shader.
 		const unsigned int slot = 0;
 		texture1_ = std::make_shared<OpenGL::Texture>(
 			"../asset/PaintedMetal05_col.tga");
 		texture1_->Bind(slot);
-		glUniform1i(
-			glGetUniformLocation(shader_program_, "texture1"), 
-			slot);
-
+		program_->UniformInt("texture1", slot);
+		
 		// Enable blending to 1 - source alpha.
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// Set the perspective matrix.
+		const std::pair<size_t, size_t> size =
+			window_interface_->GetWindowSize();
+		const float aspect = 
+			static_cast<float>(size.first) / static_cast<float>(size.second);
+		VectorMath::matrix perspective = VectorMath::Perspective(
+			65.0f * static_cast<float>(M_PI) / 180.0f,
+			aspect,
+			0.1f,
+			1000.0f);
+		program_->UniformMatrix("perspective", perspective);
+
+		// Set the camera.
+		camera_ = std::make_shared<SoftwareGL::Camera>(
+			VectorMath::vector3{ 0.f, 0.f, -4.f });
+		VectorMath::matrix view = camera_->LookAt();
+		program_->UniformMatrix("view", view);
 
 		// Start the user part of the window.
 		// FIXME(anirul): This should be done before.
@@ -386,7 +438,7 @@ namespace SoftwareGL {
 			}
 			PostRunCompute();
 			previous_count = time.count();
-			// DrawImGui();
+			DrawImGui();
 			SDL_GL_SwapWindow(sdl_window_);
 		} 
 		while (loop);
@@ -445,4 +497,4 @@ namespace SoftwareGL {
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 
-}	// End of namespace SoftwareGL.
+}	// End namespace SoftwareGL.

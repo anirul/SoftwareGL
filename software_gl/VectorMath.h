@@ -31,6 +31,7 @@
 #endif // ENABLE_VEC
 #include <assert.h>
 #include <string.h>
+#include <vector>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -531,6 +532,26 @@ namespace VectorMath {
 		vector3 r; 
 		r = v * m2; 
 		return r;	
+	}
+
+	inline matrix Perspective(
+		const float fovy,
+		const float aspect,
+		const float z_near,
+		const float z_far)
+	{
+		assert(aspect != 0.0f);
+		assert(z_far != z_near);
+		assert(aspect <= 2 * M_PI);
+		float tan_half_fovy = tanf(fovy / 2.0f);
+		matrix result;
+		result.ZeroMatrix();
+		result(0, 0) = 1.f / (aspect * tan_half_fovy);
+		result(1, 1) = 1.f / (tan_half_fovy);
+		result(2, 2) = -(z_far + z_near) / (z_far - z_near);
+		result(3, 2) = -1;
+		result(2, 3) = -(2.f * z_far * z_near) / (z_far - z_near);
+		return result;
 	}
 
 	inline matrix Projection(
@@ -1896,6 +1917,29 @@ namespace VectorMath {
 	inline bool operator!=(const vector2& v1, const vector2& v2)
 	{
 		return !operator==(v1, v2);
+	}
+
+	// Comparison operator <.
+
+	inline bool operator<(const vector& v1, const vector& v2)
+	{
+		std::vector<float> va1 = { v1.x, v1.y, v1.z, v1.w };
+		std::vector<float> va2 = { v2.x, v2.y, v2.z, v2.w };
+		return va1 < va2;
+	}
+
+	inline bool operator<(const vector3& v1, const vector3& v2)
+	{
+		std::vector<float> va1 = { v1.x, v1.y, v1.z };
+		std::vector<float> va2 = { v2.x, v2.y, v2.z };
+		return va1 < va2;
+	}
+
+	inline bool operator<(const vector2& v1, const vector2& v2)
+	{
+		std::vector<float> va1 = { v1.x, v1.y };
+		std::vector<float> va2 = { v2.x, v2.y };
+		return va1 < va2;
 	}
 
 } // end namespace VectorMath.

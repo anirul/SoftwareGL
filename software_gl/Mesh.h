@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 #include <array>
-#include "Vertex.h"
-#include "Triangle.h"
+#include "../software_gl/Vertex.h"
+#include "../software_gl/Triangle.h"
 
 namespace SoftwareGL {
 
@@ -54,7 +54,7 @@ namespace SoftwareGL {
 		ConstIterator begin() const { return { 0, *this }; }
 		ConstIterator end() const 
 		{ 
-			return { static_cast<int>(this->indices_.size()),* this };
+			return { static_cast<int>(this->indices_.size()), *this };
 		}
 
 	private:

@@ -8,8 +8,8 @@ namespace SoftwareGL {
 	public:
 		Camera(
 			const VectorMath::vector3& pos,
-			const VectorMath::vector3& to,
-			const VectorMath::vector3& up) : 
+			const VectorMath::vector3& to = { 0.f, 0.f, 1.f },
+			const VectorMath::vector3& up = { 0.f, 1.f, 0.f }) :
 			pos_(pos), to_(to), up_(up) {}
 		const VectorMath::matrix LookAt() const;
 		const VectorMath::vector Direction() const;
