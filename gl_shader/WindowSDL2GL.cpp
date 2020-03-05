@@ -382,7 +382,7 @@ namespace SoftwareGL {
 			}
 			PostRunCompute();
 			previous_count = time.count();
-			DrawImGui();
+			// DrawImGui();
 			SDL_GL_SwapWindow(sdl_window_);
 		} 
 		while (loop);

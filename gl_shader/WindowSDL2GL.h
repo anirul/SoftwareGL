@@ -21,6 +21,7 @@ namespace SoftwareGL {
 		void Run();
 
 	protected:
+		void DrawImGui();
 		void PostRunCompute();
 #if !defined(__APPLE__)
 		static void GLAPIENTRY ErrorMessageHandler(
