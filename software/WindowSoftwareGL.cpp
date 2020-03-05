@@ -8,7 +8,7 @@
 
 bool WindowSoftwareGL::Startup(const std::pair<int, int>& gl_version)
 {
-	const float aspect = 
+	const float aspect =
 		renderer_.GetImage().GetWidth() / renderer_.GetImage().GetHeight();
 	// Create a projection matrix with 90 opening angle.
 	projection_ = VectorMath::Projection(
@@ -18,11 +18,11 @@ bool WindowSoftwareGL::Startup(const std::pair<int, int>& gl_version)
 		1000.0f);
 	look_at_ = cam_.LookAt();
 	look_at_.Inverse();
- 	if (!mesh_.LoadFromObj(R"(../../asset/CubeUVNormal.obj)")) assert(false);
+	if (!mesh_.LoadFromObj(R"(../asset/CubeUVNormal.obj)")) assert(false);
 	//	if (!mesh_.LoadFromObj(".\\TorusUVNormal.obj")) assert(false);
 	//	if (!mesh_.LoadFromFile(".\\Torus.obj")) assert(false);
-	SoftwareGL::Image texture(1, 1);
-	if (!texture.LoadFromTGA(R"(../../asset/Texture.tga)")) assert(false);
+	SoftwareGL::Image texture{};
+	if (!texture.LoadFromTGA(R"(../asset/Texture.tga)")) assert(false);
 	renderer_.SetTexture(texture);
 	return true;
 }
