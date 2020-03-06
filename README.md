@@ -13,11 +13,11 @@ than a real performance oriented version of it.
 
 ## Software GL
 
-![SoftwareGL](https://github.com/anirul/SoftwareGL/raw/master/image/torus.png "A textured torus rendered by Software.")
+![SoftwareGL](https://github.com/anirul/SoftwareGL/raw/master/image/torus_software.png "A textured torus rendered by Software.")
 
 ## OpenGL (4.x)
 
-![OpenGL](https://github.com/anirul/SoftwareGL/raw/master/image/torus_opengl.png "A textured torus rendered by OpenGL.")
+![OpenGL](https://github.com/anirul/SoftwareGL/raw/master/image/torus_gl.png "A textured torus rendered by OpenGL.")
 
 ## Interface Buttons
 
