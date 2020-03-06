@@ -17,22 +17,6 @@ namespace SoftwareGL {
 		z_buffer_.resize(image_.size());
 		std::fill(image_.begin(), image_.end(), color);
 		std::fill(z_buffer_.begin(), z_buffer_.end(), z_max);
-#ifdef _DEBUG
-		// Draw texture.
-		int count = 0;
-		std::for_each(
-			texture_.begin(), 
-			texture_.end(), 
-			[&count, this](VectorMath::vector vec) 
-		{
-			const int index = 
-				count % static_cast<int>(texture_.GetWidth()) +
-				(count / static_cast<int>(texture_.GetWidth())) * 
-				static_cast<int>(image_.GetWidth());
-			image_[index] = vec;
-			count++;
-		});
-#endif	// _DEBUG
 	}
 
 	void Renderer::DrawPixel(const Vertex& v)
