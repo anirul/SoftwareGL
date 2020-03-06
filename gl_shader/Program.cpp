@@ -69,12 +69,13 @@ namespace OpenGL {
 
 	void Program::UniformMatrix(
 		const std::string& name, 
-		const VectorMath::matrix& mat) const
+		const VectorMath::matrix& mat,
+		const bool transpose /*= false*/) const
 	{
 		glUniformMatrix4fv(
 			glGetUniformLocation(program_id_, name.c_str()), 
 			1, 
-			GL_TRUE, // CHECKME: Not sure about transpose.
+			transpose ? GL_TRUE : GL_FALSE,
 			&mat._11);
 	}
 

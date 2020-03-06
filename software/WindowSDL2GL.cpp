@@ -69,7 +69,7 @@ namespace SoftwareGL {
 		if (SDL_Init(SDL_INIT_VIDEO) != 0)
 		{
 #if defined(_WIN32) || defined(_WIN64)
-			MessageBox(NULL, "Couldn't initialize SDL.", "Software GL", 0);
+			MessageBox(nullptr, "Couldn't initialize SDL.", "Software GL", 0);
 #else
 			std::cout << "Couldn't initialize SDL." << std::endl;
 #endif
@@ -87,7 +87,7 @@ namespace SoftwareGL {
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
-				NULL, 
+				nullptr, 
 				"Couldn't start a window in SDL.", 
 				"Software GL", 
 				0);

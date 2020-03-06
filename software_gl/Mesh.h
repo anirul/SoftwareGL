@@ -20,6 +20,12 @@ namespace SoftwareGL {
 		const std::vector<VectorMath::vector4>& GetNormals() const;
 		const std::vector<VectorMath::vector3>& GetTextures() const;
 		const std::vector<std::array<int, 3>>& GetIndices() const;
+		// Compute the coordinates to be compatible with OpenGL.
+		void ComputeFlat();
+		const std::vector<float>& GetFlatPositions() const;
+		const std::vector<float>& GetFlatNormals() const;
+		const std::vector<float>& GetFlatTextures() const;
+		const std::vector<unsigned int>& GetFlatIndices() const;
 
 	public:
 		// Operation on matrices.
@@ -62,6 +68,12 @@ namespace SoftwareGL {
 		std::vector<VectorMath::vector4> normals_ = {};
 		std::vector<VectorMath::vector3> textures_ = {};
 		std::vector<std::array<int, 3>> indices_ = {};
+
+	private:
+		std::vector<float> flat_positions_ = {};
+		std::vector<float> flat_normals_ = {};
+		std::vector<float> flat_textures_ = {};
+		std::vector<unsigned int> flat_indices_ = {};
 	};
 
 }	// End namespace SoftwareGL.

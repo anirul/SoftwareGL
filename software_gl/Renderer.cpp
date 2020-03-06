@@ -49,7 +49,7 @@ namespace SoftwareGL {
 			static_cast<size_t>(v.GetY()) * 
 			static_cast<size_t>(width);
 		assert(index < z_buffer_.size());
-		if (z_buffer_.size() != 0)
+		if (!z_buffer_.empty())
 		{
 			if (z_buffer_[index] <= v.GetZ())
 			{
@@ -164,10 +164,10 @@ namespace SoftwareGL {
 		// Get the bounding box.
 		VectorMath::vector4 border = tri.GetBorder();
 		// Get if current point is in triangle using barycentric coordinates.
-		for (int x = static_cast<int>(border.x); x < border.z; ++x)
+		for (auto x = static_cast<int>(border.x); x < border.z; ++x)
 		{
 			if ((x < 0.0f) || (x > image_.GetWidth() - 1)) continue;
-			for (int y = static_cast<int>(border.y); y < border.w; ++y)
+			for (auto y = static_cast<int>(border.y); y < border.w; ++y)
 			{
 				if ((y < 0.0f) || (y > image_.GetHeight() - 1)) continue;
 				// Compute barycentric coordinates.

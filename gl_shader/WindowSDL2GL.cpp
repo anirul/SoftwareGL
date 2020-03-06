@@ -108,7 +108,7 @@ namespace SoftwareGL {
 		}
 		const auto p_size = window_interface_->GetWindowSize();
 		sdl_window_ = SDL_CreateWindow(
-			"Software GL",
+			"Shader OpenGL",
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
 			static_cast<int>(p_size.first),
@@ -142,9 +142,27 @@ namespace SoftwareGL {
 
 	void WindowSDL2GL::PostRunCompute()
 	{
+		// Update time.
+		static auto start = std::chrono::system_clock::now();
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<float> time = end - start;
+		// Update the model matrix.
+		{
+			VectorMath::matrix r_x;
+			VectorMath::matrix r_y;
+			VectorMath::matrix r_z;
+			r_x.RotateXMatrix(time.count() * 0.7f);
+			r_y.RotateYMatrix(time.count() * 0.5f);
+			r_z.RotateZMatrix(time.count());
+			model_ = r_x * r_y * r_z;
+		}
+		program_->UniformMatrix("model", model_);
+		// Clear the screen.
 		glClearColor(.2f, 0.f, .2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// Bind textures.
 		texture1_->Bind(0);
+		// Draw the new view.
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
 		glDrawElements(
 			GL_TRIANGLES, 
@@ -194,98 +212,46 @@ namespace SoftwareGL {
 		// Mesh creation.
 		mesh_ = std::make_shared<SoftwareGL::Mesh>();
 		mesh_->LoadFromObj("../asset/TorusUVNormal.obj");
-
-		std::vector<float> points;
-		std::vector<float> normals;
-		std::vector<float> texels;
-		std::vector<unsigned int> indices;
-		{
-			std::vector<SoftwareGL::Vertex> vertices;
-			for (const SoftwareGL::Triangle& triangle : *mesh_)
-			{
-				auto lambda = [&vertices](const Vertex& v)
-				{
-					auto next = 
-						static_cast<unsigned int>(vertices.size());
-					auto it = std::find(vertices.begin(), vertices.end(), v);
-					if (it == vertices.end())
-					{
-						vertices.push_back(v);
-					}
-					else
-					{
-						next = 
-							static_cast<unsigned int>(
-								std::distance(vertices.begin(), it));
-					}
-					return next;
-				};
-				indices.push_back(lambda(triangle.GetV1()));
-				indices.push_back(lambda(triangle.GetV2()));
-				indices.push_back(lambda(triangle.GetV3()));
-			}
-			for (const SoftwareGL::Vertex& vertex : vertices)
-			{
-				auto point = vertex.GetPosition();
-				auto normal = vertex.GetNormal();
-				auto texel = vertex.GetTexture();
-				points.push_back(point.x);
-				points.push_back(point.y);
-				points.push_back(point.z);
-				normals.push_back(normal.x);
-				normals.push_back(normal.y);
-				normals.push_back(normal.z);
-				texels.push_back(texel.x);
-				texels.push_back(texel.y);
-			}
-		}
+		mesh_->ComputeFlat();
 
 		// Position buffer initialization.
 		GLuint point_buffer_object = 0;
-		{
-			glGenBuffers(1, &point_buffer_object);
-			glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
-			glBufferData(
-				GL_ARRAY_BUFFER,
-				points.size() * sizeof(float),
-				points.data(),
-				GL_STATIC_DRAW);
-		}
+		glGenBuffers(1, &point_buffer_object);
+		glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			mesh_->GetFlatPositions().size() * sizeof(float),
+			mesh_->GetFlatPositions().data(),
+			GL_STATIC_DRAW);
 
 		// Color buffer initialization.
 		GLuint normal_buffer_object = 0;
-		{
-			glGenBuffers(1, &normal_buffer_object);
-			glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_object);
-			glBufferData(
-				GL_ARRAY_BUFFER,
-				normals.size() * sizeof(float),
-				normals.data(),
-				GL_STATIC_DRAW);
-		}
+		glGenBuffers(1, &normal_buffer_object);
+		glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_object);
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			mesh_->GetFlatNormals().size() * sizeof(float),
+			mesh_->GetFlatNormals().data(),
+			GL_STATIC_DRAW);
 
 		// Texture coordinates buffer initialization.
 		GLuint texcoor_buffer_object = 0;
-		{
-			glGenBuffers(1, &texcoor_buffer_object);
-			glBindBuffer(GL_ARRAY_BUFFER, texcoor_buffer_object);
-			glBufferData(
-				GL_ARRAY_BUFFER,
-				texels.size() * sizeof(float),
-				texels.data(),
-				GL_STATIC_DRAW);
-		}
+		glGenBuffers(1, &texcoor_buffer_object);
+		glBindBuffer(GL_ARRAY_BUFFER, texcoor_buffer_object);
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			mesh_->GetFlatTextures().size() * sizeof(float),
+			mesh_->GetFlatTextures().data(),
+			GL_STATIC_DRAW);
 
 		// Index buffer array.
-		{
-			glGenBuffers(1, &index_buffer_object_);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
-			glBufferData(
-				GL_ELEMENT_ARRAY_BUFFER,
-				indices.size() * sizeof(unsigned int),
-				indices.data(),
-				GL_STATIC_DRAW);
-		}
+		glGenBuffers(1, &index_buffer_object_);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
+		glBufferData(
+			GL_ELEMENT_ARRAY_BUFFER,
+			mesh_->GetFlatIndices().size() * sizeof(unsigned int),
+			mesh_->GetFlatIndices().data(),
+			GL_STATIC_DRAW);
 
 		// Vertex attribute initialization.
 		GLuint vertex_attribute_object = 0;
@@ -302,6 +268,9 @@ namespace SoftwareGL {
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
+
+		// Enable Z buffer.
+		glEnable(GL_DEPTH_TEST);
 
 		// Vertex Shader program.
 		OpenGL::Shader vertex_shader(GL_VERTEX_SHADER);
@@ -350,7 +319,8 @@ namespace SoftwareGL {
 		// Bind the texture to the shader.
 		const unsigned int slot = 0;
 		texture1_ = std::make_shared<OpenGL::Texture>(
-			"../asset/PaintedMetal05_col.tga");
+			"../asset/Texture.tga");
+//			"../asset/PaintedMetal05_col.tga");
 		texture1_->Bind(slot);
 		program_->UniformInt("texture1", slot);
 		
@@ -368,13 +338,17 @@ namespace SoftwareGL {
 			aspect,
 			0.1f,
 			1000.0f);
-		program_->UniformMatrix("perspective", perspective);
+		program_->UniformMatrix("projection", perspective, true);
 
 		// Set the camera.
 		camera_ = std::make_shared<SoftwareGL::Camera>(
 			VectorMath::vector3{ 0.f, 0.f, -4.f });
 		VectorMath::matrix view = camera_->LookAt();
 		program_->UniformMatrix("view", view);
+
+		// Set the model matrix (identity for now).
+		model_.IdentityMatrix();
+		program_->UniformMatrix("model", model_);
 
 		// Start the user part of the window.
 		// FIXME(anirul): This should be done before.
@@ -438,7 +412,7 @@ namespace SoftwareGL {
 			}
 			PostRunCompute();
 			previous_count = time.count();
-			DrawImGui();
+			// DrawImGui();
 			SDL_GL_SwapWindow(sdl_window_);
 		} 
 		while (loop);

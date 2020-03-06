@@ -9,6 +9,9 @@ uniform sampler2D texture1;
 
 void main()
 {
-	vec2 tex_coordinate = out_texcoord;
-	frag_color = texture(texture1, tex_coordinate);
+	vec3 light_position = vec3(0.0, 0.0, 1.0);
+	float shade = clamp(dot(light_position, out_normal), 0.0, 1.0);
+	frag_color = 
+		vec4(shade, shade, shade, 1.0) * 
+		texture(texture1, out_texcoord);
 }

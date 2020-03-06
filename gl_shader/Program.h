@@ -34,7 +34,8 @@ namespace OpenGL {
 		// Create a uniform from a string and a matrix.
 		void UniformMatrix(
 			const std::string& name,
-			const VectorMath::matrix& mat) const;
+			const VectorMath::matrix& mat,
+			const bool flip = false) const;
 
 	private:
 		unsigned int program_id_ = 0;

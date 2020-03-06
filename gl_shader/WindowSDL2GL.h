@@ -43,6 +43,7 @@ namespace SoftwareGL {
 		std::shared_ptr<OpenGL::Texture> texture1_ = nullptr;
 		std::shared_ptr<SoftwareGL::Mesh> mesh_ = nullptr;
 		std::shared_ptr<SoftwareGL::Camera> camera_ = nullptr;
+		VectorMath::matrix model_ = {};
 		SDL_Window* sdl_window_ = nullptr;
 		SDL_GLContext sdl_gl_context_ = nullptr;
 		GLuint vertex_array_object_ = 0;
