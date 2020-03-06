@@ -9,9 +9,7 @@ project(SoftwareGL)
 
 find_package(SDL2 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
-if(NOT APPLE)
-    find_package(GLEW REQUIRED)
-endif(NOT APPLE)
+find_package(GLEW REQUIRED)
 
 add_library(software_gl
   STATIC
@@ -40,7 +38,9 @@ if (NOT APPLE)
 else()
     target_link_libraries(software_gl
       PRIVATE
-        SDL2::SDL2
+        SDL2::SDL2-static
+        SDL2::SDL2main
+        GLEW::GLEW
         imgui::imgui
     )
 endif()
@@ -58,11 +58,15 @@ if (NOT APPLE)
       PRIVATE
         SDL2::SDL2
         GLEW::GLEW
+        imgui::imgui
     )
 else()
     target_link_libraries(imgui_impl 
       PRIVATE
-        SDL2::SDL2
+        SDL2::SDL2-static
+        SDL2::SDL2main
+        GLEW::GLEW
+        imgui::imgui
     )
 endif()
 
@@ -75,7 +79,6 @@ add_executable(software
     ${PROJECT_SOURCE_DIR}/software/WindowSDL2GL.cpp
     ${PROJECT_SOURCE_DIR}/software/WindowSDL2GL.h
 )
-
 
 if (NOT APPLE)
     target_link_libraries(software 
@@ -91,7 +94,9 @@ else()
       PUBLIC
         software_gl
       PRIVATE
-        SDL2::SDL2
+        SDL2::SDL2-static
+        SDL2::SDL2main
+        GLEW::GLEW
         imgui::imgui
     )
 endif()
@@ -121,8 +126,9 @@ if (NOT APPLE)
         imgui_impl
       PRIVATE
         software_gl
-	    SDL2::SDL2
+        SDL2::SDL2
         GLEW::GLEW
+        imgui::imgui
     )
 else()
     target_link_libraries(gl_shader 
@@ -131,6 +137,9 @@ else()
         imgui_impl
       PRIVATE
         software_gl
-	    SDL2::SDL2
-    )
+        SDL2::SDL2-static
+        SDL2::SDL2main
+        GLEW::GLEW
+        imgui::imgui
+)
 endif()

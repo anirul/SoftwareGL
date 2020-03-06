@@ -17,12 +17,7 @@
 #include "../imgui/imgui_impl_sdl.h"
 #include "../imgui/imgui_impl_opengl3.h"
 #include <sdl2/SDL.h>
-#ifdef __APPLE__
-	#include <OpenGL/gl.h>
-	#include <OpenGL/glu.h>
-#else
-	#include <GL/glew.h>
-#endif
+#include <GL/glew.h>
 #if defined(_WIN32) || defined(_WIN64)
 	#include <sdl2/SDL_syswm.h>
 #endif
@@ -372,7 +367,7 @@ namespace SoftwareGL {
 			sdl_window_,
 			sdl_gl_context_);
 #if defined(__APPLE__)
-		char* glsl_version = "#version 410";
+		const char* glsl_version = "#version 410";
 #else
 		char* glsl_version = "#version 430";
 #endif

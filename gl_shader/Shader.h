@@ -1,12 +1,7 @@
 #pragma once
 
 #include <string>
-#if defined(__APPLE__)
-	#include <OpenGL/gl.h>
-	#include <OpenGL/glu.h>
-#else
-	#include <GL/glew.h>
-#endif
+#include <GL/glew.h>
 
 namespace OpenGL {
 
