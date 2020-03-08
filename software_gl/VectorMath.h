@@ -549,8 +549,8 @@ namespace VectorMath {
 		result(0, 0) = 1.f / (aspect * tan_half_fovy);
 		result(1, 1) = 1.f / (tan_half_fovy);
 		result(2, 2) = -(z_far + z_near) / (z_far - z_near);
-		result(3, 2) = -1;
-		result(2, 3) = -(2.f * z_far * z_near) / (z_far - z_near);
+		result(2, 3) = -1.f;
+		result(3, 2) = -(2.f * z_far * z_near) / (z_far - z_near);
 		return result;
 	}
 

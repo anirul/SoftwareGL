@@ -83,7 +83,7 @@ namespace SoftwareGL {
 #if defined(_WIN32) || defined(_WIN64)
 		MessageBox(nullptr, oss.str().c_str(), "OpenGL Error", 0);
 #else
-		std::cout << "OpenGL Error: " << oss.str() << std::endl;
+		std::cerr << "OpenGL Error: " << oss.str() << std::endl;
 #endif
 	}
 #endif
@@ -97,7 +97,7 @@ namespace SoftwareGL {
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(nullptr, "Couldn't initialize SDL2.", "Software GL", 0);
 #else
-			std::cout << "Couldn't initialize SDL2." << std::endl;
+			std::cerr << "Couldn't initialize SDL2." << std::endl;
 #endif
 			throw std::runtime_error("Couldn't initialize SDL2.");
 		}
@@ -118,7 +118,7 @@ namespace SoftwareGL {
 				"Software GL",
 				0);
 #else
-			std::cout << "Couldn't start a window in SDL2." << std::endl;
+			std::cerr << "Couldn't start a window in SDL2." << std::endl;
 #endif
 			throw std::runtime_error("Couldn't start a window in SDL2.");
 		}
@@ -151,7 +151,7 @@ namespace SoftwareGL {
 			r_z.RotateZMatrix(time.count());
 			model_ = r_x * r_y * r_z;
 		}
-		program_->UniformMatrix("model", model_);
+//		program_->UniformMatrix("model", model_);
 		// Clear the screen.
 		glClearColor(.2f, 0.f, .2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -264,9 +264,6 @@ namespace SoftwareGL {
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
 
-		// Enable Z buffer.
-		glEnable(GL_DEPTH_TEST);
-
 		// Vertex Shader program.
 		OpenGL::Shader vertex_shader(GL_VERTEX_SHADER);
 		if (!vertex_shader.LoadFromFile("../asset/vertex.glsl"))
@@ -278,7 +275,7 @@ namespace SoftwareGL {
 				"Vertex shader Error", 
 				0);
 #else
-			std::cout 
+			std::cerr
 				<< "Vertex shader Error: " 
 				<< vertex_shader.GetErrorMessage() 
 				<< std::endl;
@@ -297,7 +294,7 @@ namespace SoftwareGL {
 				"Fragment shader Error",
 				0);
 #else
-			std::cout
+			std::cerr
 				<< "Fragment shader Error: "
 				<< fragment_shader.GetErrorMessage()
 				<< std::endl;
@@ -323,6 +320,9 @@ namespace SoftwareGL {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+		// Enable Z buffer.
+		glEnable(GL_DEPTH_TEST);
+
 		// Set the perspective matrix.
 		const std::pair<size_t, size_t> size =
 			window_interface_->GetWindowSize();
@@ -333,7 +333,7 @@ namespace SoftwareGL {
 			aspect,
 			0.1f,
 			1000.0f);
-		program_->UniformMatrix("projection", perspective, true);
+		program_->UniformMatrix("projection", perspective);
 
 		// Set the camera.
 		camera_ = std::make_shared<SoftwareGL::Camera>(
@@ -342,12 +342,12 @@ namespace SoftwareGL {
 		program_->UniformMatrix("view", view);
 
 		// Set the model matrix (identity for now).
-		model_.IdentityMatrix();
 		program_->UniformMatrix("model", model_);
 
 		// Start the user part of the window.
 		// FIXME(anirul): This should be done before.
-		if (!window_interface_->Startup({ major_version_, minor_version_ })) {
+		if (!window_interface_->Startup({ major_version_, minor_version_ })) 
+		{
 			std::string error = "Error version is too low (" +
 				std::to_string(major_version_) + ", " +
 				std::to_string(minor_version_) + ")";
@@ -363,13 +363,11 @@ namespace SoftwareGL {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGui::StyleColorsDark();
-		ImGui_ImplSDL2_InitForOpenGL(
-			sdl_window_,
-			sdl_gl_context_);
+		ImGui_ImplSDL2_InitForOpenGL(sdl_window_, sdl_gl_context_);
 #if defined(__APPLE__)
 		const char* glsl_version = "#version 410";
 #else
-		char* glsl_version = "#version 430";
+		const char* glsl_version = "#version 430";
 #endif
 		ImGui_ImplOpenGL3_Init(glsl_version);
 
@@ -436,8 +434,8 @@ namespace SoftwareGL {
 		static int counter = 0;
 		static ImVec4 my_color{ .4f, 0.f, .4f, .5f };
 
-		float display_width = (float)io.DisplaySize.x;
-		float display_height = (float)io.DisplaySize.y;
+		auto display_width = (float)io.DisplaySize.x;
+		auto display_height = (float)io.DisplaySize.y;
 
 		ImGui::SetNextWindowPos(
 			ImVec2(display_width, display_height),
