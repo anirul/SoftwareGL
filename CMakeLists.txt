@@ -92,6 +92,8 @@ add_library(open_gl
     ${PROJECT_SOURCE_DIR}/open_gl/Texture.cpp
     ${PROJECT_SOURCE_DIR}/open_gl/Device.h
     ${PROJECT_SOURCE_DIR}/open_gl/Device.cpp
+    ${PROJECT_SOURCE_DIR}/open_gl/Mesh.h
+    ${PROJECT_SOURCE_DIR}/open_gl/Mesh.cpp
 )
 
 if (NOT APPLE)
@@ -121,6 +123,8 @@ add_executable(open_gl_test
     ${PROJECT_SOURCE_DIR}/open_gl_test/Texture_test.cpp
     ${PROJECT_SOURCE_DIR}/open_gl_test/Device_test.h
     ${PROJECT_SOURCE_DIR}/open_gl_test/Device_test.cpp
+    ${PROJECT_SOURCE_DIR}/open_gl_test/Mesh_test.h
+    ${PROJECT_SOURCE_DIR}/open_gl_test/Mesh_test.cpp
 )
 
 target_link_libraries(open_gl_test

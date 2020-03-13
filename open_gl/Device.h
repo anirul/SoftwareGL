@@ -42,6 +42,7 @@ namespace OpenGL {
 		void SetProjection(const VectorMath::matrix& projection);
 		void SetView(const VectorMath::matrix& view);
 		void SetModel(const VectorMath::matrix& model);
+		std::pair<int, int> GetGLVersion() const;
 
 	private:
 		Program program_;
@@ -49,7 +50,6 @@ namespace OpenGL {
 		std::shared_ptr<SoftwareGL::Scene> scene_;
 		std::map<std::string, std::shared_ptr<Texture>> name_texture_map_;
 		std::array<std::string, 32> name_array_;
-		std::map<std::string, std::shared_ptr<SoftwareGL::Mesh>> name_mesh_map_;
 		SDL_Window* sdl_window_ = nullptr;
 		SDL_GLContext sdl_gl_context_ = nullptr;
 		GLuint index_buffer_object_ = 0;

@@ -3,12 +3,14 @@
 #include <memory>
 #include <optional>
 #include "../software_gl/VectorMath.h"
-#include "../software_gl/Mesh.h"
+#include "../open_gl/Mesh.h"
 
 namespace SoftwareGL {
 
 	using model_mesh = 
-		std::pair<const VectorMath::matrix, const std::shared_ptr<Mesh>>;
+		std::pair<
+			const VectorMath::matrix, 
+			const std::shared_ptr<OpenGL::Mesh>>;
 	class ConstSceneIterator;
 
 	struct Scene 
@@ -53,7 +55,7 @@ namespace SoftwareGL {
 	class SceneMesh : public Scene
 	{
 	public:
-		SceneMesh(std::shared_ptr<Mesh> mesh) : mesh_(mesh) {}
+		SceneMesh(std::shared_ptr<OpenGL::Mesh> mesh) : mesh_(mesh) {}
 		const model_mesh GetLocalModelAndMesh() const override;
 		std::shared_ptr<const Scene> Next(
 			std::shared_ptr<const Scene> self = nullptr) const override;
@@ -61,7 +63,7 @@ namespace SoftwareGL {
 		ConstIterator begin() const override;
 
 	private:
-		std::shared_ptr<Mesh> mesh_;
+		std::shared_ptr<OpenGL::Mesh> mesh_;
 		std::shared_ptr<Scene> parent_ = nullptr;
 	};
 

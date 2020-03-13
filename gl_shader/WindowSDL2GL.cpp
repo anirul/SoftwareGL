@@ -21,9 +21,10 @@
 #if defined(_WIN32) || defined(_WIN64)
 	#include <sdl2/SDL_syswm.h>
 #endif
-#include "Shader.h"
+#include "../open_gl/Shader.h"
+#include "../open_gl/Device.h"
 #include "WindowSDL2GL.h"
-#include "Texture.h"
+#include "../open_gl/Texture.h"
 
 namespace SoftwareGL {
 
@@ -158,12 +159,12 @@ namespace SoftwareGL {
 		// Bind textures.
 		texture1_->Bind(0);
 		// Draw the new view.
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
-		glDrawElements(
-			GL_TRIANGLES, 
-			static_cast<GLsizei>(mesh_->GetIndices().size() * 3), 
-			GL_UNSIGNED_INT, 
-			nullptr);
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
+//		glDrawElements(
+//			GL_TRIANGLES, 
+//			static_cast<GLsizei>(mesh_->GetIndices().size() * 3), 
+//			GL_UNSIGNED_INT, 
+//			nullptr);
 	}
 
 	bool WindowSDL2GL::Startup()
@@ -175,11 +176,25 @@ namespace SoftwareGL {
 #endif
 		// Create a new device.
 		device_ = std::make_shared<OpenGL::Device>(sdl_window_);
+		// Start the user part of the window.
+		// FIXME(anirul): This should be done before.
+		if (!window_interface_->Startup(device_->GetGLVersion()))
+		{
+			auto p = device_->GetGLVersion();
+			std::string error = "Error version is too low (" +
+				std::to_string(p.first) + ", " +
+				std::to_string(p.second) + ")";
+#if defined(_WIN32) || defined(_WIN64)
+			MessageBox(hwnd_, error.c_str(), "Fragment shader Error", 0);
+#else
+			std::cout << "Fragment shader Error: " << error << std::endl;
+#endif
+			return false;
+		}
 
 		// Mesh creation.
 		mesh_ = std::make_shared<SoftwareGL::Mesh>();
 		mesh_->LoadFromObj("../asset/TorusUVNormal.obj");
-		mesh_->ComputeFlat();
 
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();

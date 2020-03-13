@@ -13,6 +13,11 @@
 
 namespace SoftwareGL {
 
+	Mesh::Mesh(const std::string& file)
+	{
+		LoadFromObj(file);
+	}
+
 	bool Mesh::LoadFromObj(const std::string& path)
 	{
 		std::ifstream ifs;
@@ -119,68 +124,6 @@ namespace SoftwareGL {
 	const std::vector<std::array<int, 3>>& Mesh::GetIndices() const
 	{
 		return indices_;
-	}
-
-	void Mesh::ComputeFlat()
-	{
-		std::vector<SoftwareGL::Vertex> vertices;
-		for (const SoftwareGL::Triangle& triangle : *this)
-		{
-			auto lambda = [&vertices](const Vertex& v)
-			{
-				auto next =
-					static_cast<unsigned int>(vertices.size());
-				auto it = std::find(vertices.begin(), vertices.end(), v);
-				if (it == vertices.end())
-				{
-					vertices.push_back(v);
-				}
-				else
-				{
-					next =
-						static_cast<unsigned int>(
-							std::distance(vertices.begin(), it));
-				}
-				return next;
-			};
-			flat_indices_.push_back(lambda(triangle.GetV1()));
-			flat_indices_.push_back(lambda(triangle.GetV2()));
-			flat_indices_.push_back(lambda(triangle.GetV3()));
-		}
-		for (const SoftwareGL::Vertex& vertex : vertices)
-		{
-			auto point = vertex.GetPosition();
-			auto normal = vertex.GetNormal();
-			auto texel = vertex.GetTexture();
-			flat_positions_.push_back(point.x);
-			flat_positions_.push_back(point.y);
-			flat_positions_.push_back(point.z);
-			flat_normals_.push_back(normal.x);
-			flat_normals_.push_back(normal.y);
-			flat_normals_.push_back(normal.z);
-			flat_textures_.push_back(texel.x);
-			flat_textures_.push_back(texel.y);
-		}
-	}
-
-	const std::vector<float>& Mesh::GetFlatPositions() const
-	{
-		return flat_positions_;
-	}
-
-	const std::vector<float>& Mesh::GetFlatNormals() const
-	{
-		return flat_normals_;
-	}
-
-	const std::vector<float>& Mesh::GetFlatTextures() const
-	{
-		return flat_textures_;
-	}
-
-	const std::vector<unsigned int>& Mesh::GetFlatIndices() const
-	{
-		return flat_indices_;
 	}
 
 	void Mesh::AllPositionMatrixMult(const VectorMath::matrix& matrix)

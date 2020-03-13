@@ -5,9 +5,9 @@
 #include <SDL.h>
 #include "../software_gl/Mesh.h"
 #include "../software_gl/Camera.h"
-#include "Device.h"
-#include "Program.h"
-#include "Texture.h"
+#include "../open_gl/Device.h"
+#include "../open_gl/Program.h"
+#include "../open_gl/Texture.h"
 #include "WindowInterface.h"
 
 namespace SoftwareGL {

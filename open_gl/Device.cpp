@@ -41,60 +41,12 @@ namespace OpenGL {
 	bool Device::Startup()
 	{
 
-		// Position buffer initialization.
-		GLuint point_buffer_object = 0;
-		glGenBuffers(1, &point_buffer_object);
-		glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
-		glBufferData(
-			GL_ARRAY_BUFFER,
-			mesh_->GetFlatPositions().size() * sizeof(float),
-			mesh_->GetFlatPositions().data(),
-			GL_STATIC_DRAW);
+		// Move this to the mesh class, and use the scene_ pointer to move
+		// around the scene and initialize it.
 
-		// Normal buffer initialization.
-		GLuint normal_buffer_object = 0;
-		glGenBuffers(1, &normal_buffer_object);
-		glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_object);
-		glBufferData(
-			GL_ARRAY_BUFFER,
-			mesh_->GetFlatNormals().size() * sizeof(float),
-			mesh_->GetFlatNormals().data(),
-			GL_STATIC_DRAW);
+		
 
-		// Texture coordinates buffer initialization.
-		GLuint texcoor_buffer_object = 0;
-		glGenBuffers(1, &texcoor_buffer_object);
-		glBindBuffer(GL_ARRAY_BUFFER, texcoor_buffer_object);
-		glBufferData(
-			GL_ARRAY_BUFFER,
-			mesh_->GetFlatTextures().size() * sizeof(float),
-			mesh_->GetFlatTextures().data(),
-			GL_STATIC_DRAW);
-
-		// Index buffer array.
-		glGenBuffers(1, &index_buffer_object_);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
-		glBufferData(
-			GL_ELEMENT_ARRAY_BUFFER,
-			mesh_->GetFlatIndices().size() * sizeof(unsigned int),
-			mesh_->GetFlatIndices().data(),
-			GL_STATIC_DRAW);
-
-		// Vertex attribute initialization.
-		GLuint vertex_attribute_object = 0;
-		glGenVertexArrays(1, &vertex_attribute_object);
-		glBindVertexArray(vertex_attribute_object);
-		glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-		glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_object);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-		glBindBuffer(GL_ARRAY_BUFFER, texcoor_buffer_object);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-		// Enable vertex attrib array.
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
+		// Post this should be moved to the Draw method.
 
 		// Vertex Shader program.
 		OpenGL::Shader vertex_shader(GL_VERTEX_SHADER);
@@ -175,46 +127,29 @@ namespace OpenGL {
 
 		// Set the model matrix (identity for now).
 		program_->UniformMatrix("model", model_);
-
-		// Start the user part of the window.
-		// FIXME(anirul): This should be done before.
-		if (!window_interface_->Startup({ major_version_, minor_version_ }))
-		{
-			std::string error = "Error version is too low (" +
-				std::to_string(major_version_) + ", " +
-				std::to_string(minor_version_) + ")";
-#if defined(_WIN32) || defined(_WIN64)
-			MessageBox(hwnd_, error.c_str(), "Fragment shader Error", 0);
-#else
-			std::cout << "Fragment shader Error: " << error << std::endl;
-#endif
-			return false;
-		}
-
 	}
 
 	void Device::Draw()
 	{
-
-	}
-
-	bool Device::AddMesh(
-		const std::string& name, 
-		std::shared_ptr<SoftwareGL::Mesh> mesh)
-	{
-		auto ret = name_mesh_map_.insert({ name, mesh });
-		return ret.second;
-	}
-
-	bool Device::RemoveMesh(const std::string& name)
-	{
-		auto it = name_mesh_map_.find(name);
-		if (it == name_mesh_map_.end())
+		for (auto value : *scene_)
 		{
-			return false;
+			
+				// Vertex attribute initialization.
+				GLuint vertex_attribute_object = 0;
+				glGenVertexArrays(1, &vertex_attribute_object);
+				glBindVertexArray(vertex_attribute_object);
+				glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
+				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+				glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_object);
+				glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+				glBindBuffer(GL_ARRAY_BUFFER, texcoor_buffer_object);
+				glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+				// Enable vertex attrib array.
+				glEnableVertexAttribArray(0);
+				glEnableVertexAttribArray(1);
+				glEnableVertexAttribArray(2);
 		}
-		name_mesh_map_.erase(it);
-		return true;
 	}
 
 	void Device::AddShader(const Shader& shader)
@@ -248,8 +183,8 @@ namespace OpenGL {
 
 	void Device::EnableTexture(const std::string& name)
 	{
-		auto it = name_texture_map_.find(name);
-		if (it == name_texture_map_.end())
+		auto it1 = name_texture_map_.find(name);
+		if (it1 == name_texture_map_.end())
 		{
 			throw std::runtime_error("try to enable a texture: " + name);
 		}
@@ -258,7 +193,7 @@ namespace OpenGL {
 			if (name_array_[i].empty())
 			{
 				name_array_[i] = name;
-				it->second->Bind(i);
+				it1->second->Bind(i);
 				return;
 			}
 		}
@@ -267,21 +202,27 @@ namespace OpenGL {
 
 	void Device::DisableTexture(const std::string& name)
 	{
-		auto it = name_texture_map_.find(name);
-		if (it == name_texture_map_.end())
+		auto it1 = name_texture_map_.find(name);
+		if (it1 == name_texture_map_.end())
 		{
 			throw std::runtime_error("no texture named: " + name);
 		}
-		for (int i = 0; i < name_array_.size(); ++i)
+		auto it2 = std::find_if(
+			name_array_.begin(),
+			name_array_.end(),
+			[name](const std::string& value)
 		{
-			if (name_array_[i] == name)
-			{
-				name_array_[i] = "";
-				it->second->UnBind();
-				return;
-			}
+			return value == name;
+		});
+		if (it2 != name_array_.end())
+		{
+			*it2 = "";
+			it1->second->UnBind();
 		}
-		throw std::runtime_error("No slot bind to: " + name);
+		else
+		{
+			throw std::runtime_error("No slot bind to: " + name);
+		}
 	}
 
 	void Device::SetProjection(const VectorMath::matrix& projection)
@@ -297,6 +238,11 @@ namespace OpenGL {
 	void Device::SetModel(const VectorMath::matrix& model)
 	{
 		program_.UniformMatrix("model", model);
+	}
+
+	std::pair<int, int> Device::GetGLVersion() const
+	{
+		return std::make_pair(major_version_, minor_version_);
 	}
 
 } // End namespace OpenGL.
