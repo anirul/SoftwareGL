@@ -2,17 +2,24 @@
 
 namespace OpenGL {
 
-	Program::Program(const Shader& vertex, const Shader& fragment)
+	Program::Program()
 	{
 		program_id_ = glCreateProgram();
-		glAttachShader(program_id_, vertex.GetId());
-		glAttachShader(program_id_, fragment.GetId());
-		glLinkProgram(program_id_);
 	}
 
 	Program::~Program()
 	{
 		glDeleteProgram(program_id_);
+	}
+
+	void Program::AddShader(const Shader& shader)
+	{
+		glAttachShader(program_id_, shader.GetId());
+	}
+
+	void Program::LinkShader()
+	{
+		glLinkProgram(program_id_);
 	}
 
 	void Program::Use() const
@@ -23,7 +30,8 @@ namespace OpenGL {
 	void Program::UniformBool(const std::string& name, bool value) const
 	{
 		glUniform1i(
-			glGetUniformLocation(program_id_, name.c_str()), (int)value);
+			glGetUniformLocation(program_id_, name.c_str()), 
+			(int)value);
 	}
 
 	void Program::UniformInt(const std::string& name, int value) const
@@ -41,7 +49,9 @@ namespace OpenGL {
 		const VectorMath::vector2& vec2) const
 	{
 		glUniform2f(
-			glGetUniformLocation(program_id_, name.c_str()), vec2.x, vec2.y);
+			glGetUniformLocation(program_id_, name.c_str()), 
+			vec2.x, 
+			vec2.y);
 	}
 
 	void Program::UniformVector3(

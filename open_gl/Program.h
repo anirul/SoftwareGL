@@ -1,16 +1,21 @@
 #pragma once
 
-#include "../gl_shader/Shader.h"
+#include <optional>
+#include "../open_gl/Shader.h"
 #include "../software_gl/VectorMath.h"
 
 namespace OpenGL {
 
 	class Program {
 	public:
-		// Create and attach the shader to the program.
-		Program(const Shader& vertex, const Shader& fragment);
+		// Create the program.
+		Program();
 		// Destructor
 		virtual ~Program();
+		// Attach shader to a program.
+		void AddShader(const Shader& shader);
+		// Link shaders to a program.
+		void LinkShader();
 		// Use the program.
 		void Use() const;
 		// Create a uniform from a string and a bool.

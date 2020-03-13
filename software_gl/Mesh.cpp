@@ -13,7 +13,7 @@
 
 namespace SoftwareGL {
 
-	bool SoftwareGL::Mesh::LoadFromObj(const std::string& path)
+	bool Mesh::LoadFromObj(const std::string& path)
 	{
 		std::ifstream ifs;
 		ifs.open(path, std::ifstream::in);
