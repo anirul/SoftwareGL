@@ -129,6 +129,8 @@ namespace SoftwareGL {
 		SDL_GetWindowWMInfo(sdl_window_, &wmInfo);
 		hwnd_ = wmInfo.info.win.window;
 #endif
+		// Create a new device.
+		device_ = std::make_shared<OpenGL::Device>(sdl_window_);
 	}
 
 	WindowSDL2GL::~WindowSDL2GL()
@@ -149,10 +151,7 @@ namespace SoftwareGL {
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(WindowSDL2GL::ErrorMessageHandler, nullptr);
 #endif
-		// Create a new device.
-		device_ = std::make_shared<OpenGL::Device>(sdl_window_);
 		// Start the user part of the window.
-		// FIXME(anirul): This should be done before.
 		if (!window_interface_->Startup(device_->GetGLVersion()))
 		{
 			auto p = device_->GetGLVersion();

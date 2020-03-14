@@ -46,12 +46,11 @@ namespace OpenGL {
 		std::pair<int, int> GetGLVersion() const;
 
 	private:
-		Program program_ = {};
+		std::shared_ptr<Program> program_;
 		std::vector<Shader> shaders_ = {};
 		std::shared_ptr<SoftwareGL::Scene> scene_;
 		std::map<std::string, std::shared_ptr<Texture>> name_texture_map_;
 		std::array<std::string, 32> name_array_;
-		SDL_Window* sdl_window_ = nullptr;
 		SDL_GLContext sdl_gl_context_ = nullptr;
 		int major_version_ = 0;
 		int minor_version_ = 0;

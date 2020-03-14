@@ -13,7 +13,7 @@ namespace OpenGL {
 	Device::Device(SDL_Window* sdl_window) 
 	{
 		// GL context.
-		sdl_gl_context_ = SDL_GL_CreateContext(sdl_window_);
+		sdl_gl_context_ = SDL_GL_CreateContext(sdl_window);
 		SDL_GL_SetAttribute(
 			SDL_GL_CONTEXT_PROFILE_MASK,
 			SDL_GL_CONTEXT_PROFILE_CORE);
@@ -34,6 +34,9 @@ namespace OpenGL {
 		{
 			throw std::runtime_error("couldn't initialize GLEW");
 		}
+
+		// Create a program.
+		program_ = std::make_shared<Program>();
 	}
 
 	Device::~Device() {}
@@ -79,10 +82,10 @@ namespace OpenGL {
 		}
 
 		// Create the program.
-		program_.AddShader(vertex_shader);
-		program_.AddShader(fragment_shader);
-		program_.LinkShader();
-		program_.Use();
+		program_->AddShader(vertex_shader);
+		program_->AddShader(fragment_shader);
+		program_->LinkShader();
+		program_->Use();
 
 		// Bind the texture to the shader.
 		const unsigned int slot = 0;
@@ -106,15 +109,15 @@ namespace OpenGL {
 			aspect,
 			0.1f,
 			1000.0f);
-		program_.UniformMatrix("projection", perspective);
+		program_->UniformMatrix("projection", perspective);
 
 		// Set the camera.
 		VectorMath::matrix view = camera_.LookAt();
-		program_.UniformMatrix("view", view);
+		program_->UniformMatrix("view", view);
 
 		// Set the model matrix (identity for now).
 		VectorMath::matrix model = {};
-		program_.UniformMatrix("model", model);
+		program_->UniformMatrix("model", model);
 		return true;
 	}
 
@@ -124,9 +127,11 @@ namespace OpenGL {
 		glClearColor(.2f, 0.f, .2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		if (!scene_) return;
+
 		for (const auto& value : *scene_)
 		{
-			program_.UniformMatrix("model", value.first);
+			program_->UniformMatrix("model", value.first);
 			// Vertex attribute initialization.
 			GLuint vertex_attribute_object = 0;
 			glGenVertexArrays(1, &vertex_attribute_object);
@@ -165,12 +170,12 @@ namespace OpenGL {
 
 	void Device::AddShader(const Shader& shader)
 	{
-		program_.AddShader(shader);
+		program_->AddShader(shader);
 	}
 
 	void Device::LinkShader()
 	{
-		program_.LinkShader();
+		program_->LinkShader();
 	}
 
 	bool Device::AddTexture(
@@ -238,17 +243,17 @@ namespace OpenGL {
 
 	void Device::SetProjection(const VectorMath::matrix& projection)
 	{
-		program_.UniformMatrix("projection", projection);
+		program_->UniformMatrix("projection", projection);
 	}
 
 	void Device::SetView(const VectorMath::matrix& view)
 	{
-		program_.UniformMatrix("view", view);
+		program_->UniformMatrix("view", view);
 	}
 
 	void Device::SetModel(const VectorMath::matrix& model)
 	{
-		program_.UniformMatrix("model", model);
+		program_->UniformMatrix("model", model);
 	}
 
 	void Device::SetCamera(const SoftwareGL::Camera& camera)

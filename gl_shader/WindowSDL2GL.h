@@ -44,8 +44,6 @@ namespace SoftwareGL {
 		VectorMath::matrix model_ = {};
 		SDL_Window* sdl_window_ = nullptr;
 		SDL_GLContext sdl_gl_context_ = nullptr;
-		GLuint vertex_array_object_ = 0;
-		GLuint shader_program_ = 0;
 #if defined(_WIN32) || defined(_WIN64)
 		HWND hwnd_;
 #endif
