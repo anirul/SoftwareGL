@@ -20,7 +20,7 @@ namespace SoftwareGL {
 		public:
 			ConstIterator(std::shared_ptr<const Scene> scene);
 			const model_mesh operator*() const;
-			ConstIterator& operator++();
+			ConstIterator operator++();
 			bool operator!=(const ConstIterator& it) const;
 		private:
 			std::shared_ptr<const Scene> scene_;

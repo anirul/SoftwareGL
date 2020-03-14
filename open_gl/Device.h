@@ -9,6 +9,7 @@
 #include "../software_gl/VectorMath.h"
 #include "../software_gl/Mesh.h"
 #include "../software_gl/Scene.h"
+#include "../software_gl/Camera.h"
 
 namespace OpenGL {
 
@@ -19,18 +20,15 @@ namespace OpenGL {
 		virtual ~Device();
 
 	public:
-		bool Startup();
+		// Startup the scene.
+		bool Startup(std::pair<int, int> size);
+		// Draw what is on the scene.
 		void Draw();
 		// Scene management.
-		bool SetScene(std::shared_ptr<SoftwareGL::Scene> scene);
-		// Mesh management.
-		bool AddMesh(
-			const std::string& name, 
-			std::shared_ptr<SoftwareGL::Mesh> mesh);
-		bool RemoveMesh(const std::string& name);
+		void SetScene(std::shared_ptr<SoftwareGL::Scene> scene);
 		// Shader management.
 		void AddShader(const Shader& shader);
-		bool LinkShader();
+		void LinkShader();
 		// Texture management.
 		bool AddTexture(
 			const std::string& name, 
@@ -42,19 +40,22 @@ namespace OpenGL {
 		void SetProjection(const VectorMath::matrix& projection);
 		void SetView(const VectorMath::matrix& view);
 		void SetModel(const VectorMath::matrix& model);
+		// Set the camera.
+		void SetCamera(const SoftwareGL::Camera& camera);
+		// Get the GL version.
 		std::pair<int, int> GetGLVersion() const;
 
 	private:
-		Program program_;
-		std::vector<Shader> shaders_;
+		Program program_ = {};
+		std::vector<Shader> shaders_ = {};
 		std::shared_ptr<SoftwareGL::Scene> scene_;
 		std::map<std::string, std::shared_ptr<Texture>> name_texture_map_;
 		std::array<std::string, 32> name_array_;
 		SDL_Window* sdl_window_ = nullptr;
 		SDL_GLContext sdl_gl_context_ = nullptr;
-		GLuint index_buffer_object_ = 0;
 		int major_version_ = 0;
 		int minor_version_ = 0;
+		SoftwareGL::Camera camera_ = SoftwareGL::Camera({ 0, 0, -4 });
 	};
 
 } // End namespace OpenGL.

@@ -38,23 +38,15 @@ namespace OpenGL {
 
 	Device::~Device() {}
 
-	bool Device::Startup()
+	bool Device::Startup(std::pair<int, int> size)
 	{
-
-		// Move this to the mesh class, and use the scene_ pointer to move
-		// around the scene and initialize it.
-
-		
-
-		// Post this should be moved to the Draw method.
-
 		// Vertex Shader program.
 		OpenGL::Shader vertex_shader(GL_VERTEX_SHADER);
 		if (!vertex_shader.LoadFromFile("../asset/vertex.glsl"))
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
-				hwnd_,
+				nullptr,
 				vertex_shader.GetErrorMessage().c_str(),
 				"Vertex shader Error",
 				0);
@@ -73,7 +65,7 @@ namespace OpenGL {
 		{
 #if defined(_WIN32) || defined(_WIN64)
 			MessageBox(
-				hwnd_,
+				nullptr,
 				fragment_shader.GetErrorMessage().c_str(),
 				"Fragment shader Error",
 				0);
@@ -87,18 +79,17 @@ namespace OpenGL {
 		}
 
 		// Create the program.
-		program_ = std::make_shared<OpenGL::Program>(
-			vertex_shader,
-			fragment_shader);
-		program_->Use();
+		program_.AddShader(vertex_shader);
+		program_.AddShader(fragment_shader);
+		program_.LinkShader();
+		program_.Use();
 
 		// Bind the texture to the shader.
 		const unsigned int slot = 0;
-		texture1_ = std::make_shared<OpenGL::Texture>(
-			"../asset/Texture.tga");
-		//			"../asset/PaintedMetal05_col.tga");
-		texture1_->Bind(slot);
-		program_->UniformInt("texture1", slot);
+		AddTexture(
+			"texture1",
+			std::make_shared<OpenGL::Texture>("../asset/Texture.tga"));
+		EnableTexture("texture1");
 
 		// Enable blending to 1 - source alpha.
 		glEnable(GL_BLEND);
@@ -108,8 +99,6 @@ namespace OpenGL {
 		glEnable(GL_DEPTH_TEST);
 
 		// Set the perspective matrix.
-		const std::pair<size_t, size_t> size =
-			window_interface_->GetWindowSize();
 		const float aspect =
 			static_cast<float>(size.first) / static_cast<float>(size.second);
 		VectorMath::matrix perspective = VectorMath::Perspective(
@@ -117,39 +106,61 @@ namespace OpenGL {
 			aspect,
 			0.1f,
 			1000.0f);
-		program_->UniformMatrix("projection", perspective);
+		program_.UniformMatrix("projection", perspective);
 
 		// Set the camera.
-		camera_ = std::make_shared<SoftwareGL::Camera>(
-			VectorMath::vector3{ 0.f, 0.f, -4.f });
-		VectorMath::matrix view = camera_->LookAt();
-		program_->UniformMatrix("view", view);
+		VectorMath::matrix view = camera_.LookAt();
+		program_.UniformMatrix("view", view);
 
 		// Set the model matrix (identity for now).
-		program_->UniformMatrix("model", model_);
+		VectorMath::matrix model = {};
+		program_.UniformMatrix("model", model);
+		return true;
 	}
 
 	void Device::Draw()
 	{
-		for (auto value : *scene_)
-		{
-			
-				// Vertex attribute initialization.
-				GLuint vertex_attribute_object = 0;
-				glGenVertexArrays(1, &vertex_attribute_object);
-				glBindVertexArray(vertex_attribute_object);
-				glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object);
-				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-				glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_object);
-				glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-				glBindBuffer(GL_ARRAY_BUFFER, texcoor_buffer_object);
-				glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+		// Clear the screen.
+		glClearColor(.2f, 0.f, .2f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-				// Enable vertex attrib array.
-				glEnableVertexAttribArray(0);
-				glEnableVertexAttribArray(1);
-				glEnableVertexAttribArray(2);
+		for (const auto& value : *scene_)
+		{
+			program_.UniformMatrix("model", value.first);
+			// Vertex attribute initialization.
+			GLuint vertex_attribute_object = 0;
+			glGenVertexArrays(1, &vertex_attribute_object);
+			glBindVertexArray(vertex_attribute_object);
+			glBindBuffer(GL_ARRAY_BUFFER, value.second->PointObject());
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+			glBindBuffer(GL_ARRAY_BUFFER, value.second->NormalObject());
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+			glBindBuffer(GL_ARRAY_BUFFER, value.second->TextureObject());
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+			// Enable vertex attrib array.
+			glEnableVertexAttribArray(0);
+			glEnableVertexAttribArray(1);
+			glEnableVertexAttribArray(2);
+
+			// Bind textures.
+			for (auto texture : value.second->GetTextures())
+			{
+
+			}
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, value.second->IndexObject());
+			glDrawElements(
+				GL_TRIANGLES, 
+				static_cast<GLsizei>(value.second->IndexSize()),
+				GL_UNSIGNED_INT, 
+				nullptr);
 		}
+	}
+
+	void Device::SetScene(std::shared_ptr<SoftwareGL::Scene> scene)
+	{
+		scene_ = scene;
 	}
 
 	void Device::AddShader(const Shader& shader)
@@ -157,7 +168,7 @@ namespace OpenGL {
 		program_.AddShader(shader);
 	}
 
-	bool Device::LinkShader()
+	void Device::LinkShader()
 	{
 		program_.LinkShader();
 	}
@@ -238,6 +249,11 @@ namespace OpenGL {
 	void Device::SetModel(const VectorMath::matrix& model)
 	{
 		program_.UniformMatrix("model", model);
+	}
+
+	void Device::SetCamera(const SoftwareGL::Camera& camera)
+	{
+		camera_ = camera;
 	}
 
 	std::pair<int, int> Device::GetGLVersion() const

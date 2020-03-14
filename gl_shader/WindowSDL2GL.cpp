@@ -138,33 +138,8 @@ namespace SoftwareGL {
 
 	void WindowSDL2GL::PostRunCompute()
 	{
-		// Update time.
-		static auto start = std::chrono::system_clock::now();
-		auto end = std::chrono::system_clock::now();
-		std::chrono::duration<float> time = end - start;
-		// Update the model matrix.
-		{
-			VectorMath::matrix r_x;
-			VectorMath::matrix r_y;
-			VectorMath::matrix r_z;
-			r_x.RotateXMatrix(time.count() * 0.7f);
-			r_y.RotateYMatrix(time.count() * 0.5f);
-			r_z.RotateZMatrix(time.count());
-			model_ = r_x * r_y * r_z;
-		}
-		program_->UniformMatrix("model", model_);
-		// Clear the screen.
-		glClearColor(.2f, 0.f, .2f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// Bind textures.
-		texture1_->Bind(0);
 		// Draw the new view.
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
-//		glDrawElements(
-//			GL_TRIANGLES, 
-//			static_cast<GLsizei>(mesh_->GetIndices().size() * 3), 
-//			GL_UNSIGNED_INT, 
-//			nullptr);
+		device_->Draw();
 	}
 
 	bool WindowSDL2GL::Startup()
@@ -193,8 +168,8 @@ namespace SoftwareGL {
 		}
 
 		// Mesh creation.
-		mesh_ = std::make_shared<SoftwareGL::Mesh>();
-		mesh_->LoadFromObj("../asset/TorusUVNormal.obj");
+		SoftwareGL::Mesh mesh{};
+		mesh.LoadFromObj("../asset/TorusUVNormal.obj");
 
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();

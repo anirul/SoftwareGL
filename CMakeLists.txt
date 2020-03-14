@@ -70,6 +70,13 @@ add_executable(software_gl_test
     ${PROJECT_SOURCE_DIR}/software_gl_test/Scene_test.cpp
 )
 
+add_test(
+  NAME
+    software_gl_test
+  COMMAND
+    software_gl_test
+)
+
 target_link_libraries(software_gl_test
   PUBLIC
     open_gl
@@ -125,6 +132,13 @@ add_executable(open_gl_test
     ${PROJECT_SOURCE_DIR}/open_gl_test/Device_test.cpp
     ${PROJECT_SOURCE_DIR}/open_gl_test/Mesh_test.h
     ${PROJECT_SOURCE_DIR}/open_gl_test/Mesh_test.cpp
+)
+
+add_test(
+  NAME
+    open_gl_test
+  COMMAND
+    open_gl_test
 )
 
 target_link_libraries(open_gl_test
@@ -214,7 +228,6 @@ if (NOT APPLE)
         software_gl
         imgui_impl
       PRIVATE
-        software_gl
         SDL2::SDL2
         GLEW::GLEW
         imgui::imgui
@@ -226,7 +239,6 @@ else()
         software_gl
         imgui_impl
       PRIVATE
-        software_gl
         SDL2::SDL2-static
         SDL2::SDL2main
         GLEW::GLEW

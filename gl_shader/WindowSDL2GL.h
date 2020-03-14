@@ -40,11 +40,7 @@ namespace SoftwareGL {
 
 	private:
 		std::shared_ptr<WindowInterface> window_interface_;
-		std::shared_ptr<OpenGL::Program> program_ = nullptr;
-		std::shared_ptr<OpenGL::Texture> texture1_ = nullptr;
-		std::shared_ptr<SoftwareGL::Mesh> mesh_ = nullptr;
-		std::shared_ptr<SoftwareGL::Camera> camera_ = nullptr;
-		std::shared_ptr<OpenGL::Device> device_ = nullptr;
+		std::shared_ptr<OpenGL::Device> device_;
 		VectorMath::matrix model_ = {};
 		SDL_Window* sdl_window_ = nullptr;
 		SDL_GLContext sdl_gl_context_ = nullptr;

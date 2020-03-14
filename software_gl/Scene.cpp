@@ -70,7 +70,7 @@ namespace SoftwareGL {
 		return scene_->GetLocalModelAndMesh();
 	}
 
-	Scene::ConstIterator& Scene::ConstIterator::operator++()
+	Scene::ConstIterator Scene::ConstIterator::operator++()
 	{
 		auto next_scene = scene_->Next(scene_);
 		while (!next_scene->IsLeaf())
