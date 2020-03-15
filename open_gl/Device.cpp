@@ -35,6 +35,13 @@ namespace OpenGL {
 			throw std::runtime_error("couldn't initialize GLEW");
 		}
 
+		// Enable blending to 1 - source alpha.
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// Enable Z buffer.
+		glEnable(GL_DEPTH_TEST);
+
 		// Create a program.
 		program_ = std::make_shared<Program>();
 	}
@@ -47,18 +54,12 @@ namespace OpenGL {
 		OpenGL::Shader vertex_shader(GL_VERTEX_SHADER);
 		if (!vertex_shader.LoadFromFile("../asset/vertex.glsl"))
 		{
-#if defined(_WIN32) || defined(_WIN64)
-			MessageBox(
-				nullptr,
-				vertex_shader.GetErrorMessage().c_str(),
-				"Vertex shader Error",
-				0);
-#else
-			std::cerr
-				<< "Vertex shader Error: "
-				<< vertex_shader.GetErrorMessage()
-				<< std::endl;
-#endif
+			if (func_)
+			{
+				func_(
+					"Fragment shader Error: " +
+					vertex_shader.GetErrorMessage());
+			}
 			return false;
 		}
 
@@ -66,18 +67,12 @@ namespace OpenGL {
 		OpenGL::Shader fragment_shader(GL_FRAGMENT_SHADER);
 		if (!fragment_shader.LoadFromFile("../asset/fragment.glsl"))
 		{
-#if defined(_WIN32) || defined(_WIN64)
-			MessageBox(
-				nullptr,
-				fragment_shader.GetErrorMessage().c_str(),
-				"Fragment shader Error",
-				0);
-#else
-			std::cerr
-				<< "Fragment shader Error: "
-				<< fragment_shader.GetErrorMessage()
-				<< std::endl;
-#endif
+			if (func_)
+			{
+				func_(
+					"Fragment shader Error: " + 
+					fragment_shader.GetErrorMessage());
+			}
 			return false;
 		}
 
@@ -86,20 +81,6 @@ namespace OpenGL {
 		program_->AddShader(fragment_shader);
 		program_->LinkShader();
 		program_->Use();
-
-		// Bind the texture to the shader.
-		const unsigned int slot = 0;
-		AddTexture(
-			"texture1",
-			std::make_shared<OpenGL::Texture>("../asset/Texture.tga"));
-		EnableTexture("texture1");
-
-		// Enable blending to 1 - source alpha.
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		// Enable Z buffer.
-		glEnable(GL_DEPTH_TEST);
 
 		// Set the perspective matrix.
 		const float aspect =
@@ -118,6 +99,12 @@ namespace OpenGL {
 		// Set the model matrix (identity for now).
 		VectorMath::matrix model = {};
 		program_->UniformMatrix("model", model);
+
+		// Vertex attribute initialization.
+		GLuint vertex_attribute_object = 0;
+		glGenVertexArrays(1, &vertex_attribute_object);
+		glBindVertexArray(vertex_attribute_object);
+
 		return true;
 	}
 
@@ -127,15 +114,17 @@ namespace OpenGL {
 		glClearColor(.2f, 0.f, .2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (!scene_) return;
-
-		for (const auto& value : *scene_)
+		for (const std::shared_ptr<SoftwareGL::Scene>& scene : scene_tree_)
 		{
+			const auto& value = scene->GetLocalModelAndMesh();
+			if (!value.second)
+			{
+				continue;
+			}
+
+			// Set uniform matrix.
 			program_->UniformMatrix("model", value.first);
-			// Vertex attribute initialization.
-			GLuint vertex_attribute_object = 0;
-			glGenVertexArrays(1, &vertex_attribute_object);
-			glBindVertexArray(vertex_attribute_object);
+			
 			glBindBuffer(GL_ARRAY_BUFFER, value.second->PointObject());
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 			glBindBuffer(GL_ARRAY_BUFFER, value.second->NormalObject());
@@ -149,23 +138,29 @@ namespace OpenGL {
 			glEnableVertexAttribArray(2);
 
 			// Bind textures.
-			for (auto texture : value.second->GetTextures())
+			for (const std::string& texture : value.second->GetTextures())
 			{
-
+				EnableTexture(texture);
 			}
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, value.second->IndexObject());
 			glDrawElements(
-				GL_TRIANGLES, 
+				GL_TRIANGLES,
 				static_cast<GLsizei>(value.second->IndexSize()),
-				GL_UNSIGNED_INT, 
+				GL_UNSIGNED_INT,
 				nullptr);
+
+			// Unbind no more used textures.
+			for (const std::string& texture : value.second->GetTextures())
+			{
+				DisableTexture(texture);
+			}
 		}
 	}
 
-	void Device::SetScene(std::shared_ptr<SoftwareGL::Scene> scene)
+	void Device::SetSceneTree(const SoftwareGL::SceneTree& scene_tree)
 	{
-		scene_ = scene;
+		scene_tree_ = scene_tree;
 	}
 
 	void Device::AddShader(const Shader& shader)
@@ -264,6 +259,12 @@ namespace OpenGL {
 	std::pair<int, int> Device::GetGLVersion() const
 	{
 		return std::make_pair(major_version_, minor_version_);
+	}
+
+	void Device::SetCallbackError(
+		std::function<void(const std::string&)> func)
+	{
+		func_ = func;
 	}
 
 } // End namespace OpenGL.

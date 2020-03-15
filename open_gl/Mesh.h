@@ -1,13 +1,15 @@
 #pragma once
 
-#include "../software_gl/Mesh.h"
+#include <vector>
+#include <string>
+#include <initializer_list>
 
 namespace OpenGL {
 
 	class Mesh
 	{
 	public:
-		Mesh(const SoftwareGL::Mesh& mesh);
+		Mesh(const std::string& file, bool test = false);
 
 	public:
 		unsigned int PointObject() const { return point_buffer_object_; }
@@ -15,11 +17,11 @@ namespace OpenGL {
 		unsigned int TextureObject() const { return texture_buffer_object_; }
 		unsigned int IndexObject() const { return index_buffer_object_; }
 		size_t IndexSize() const { return index_size_; }
-		const std::vector<int> GetTextures() const { return textures_; }
-		void SetTexture(std::initializer_list<int> values);
+		const std::vector<std::string> GetTextures() const { return textures_; }
+		void SetTexture(std::initializer_list<std::string> values);
 
 	private:
-		std::vector<int> textures_;
+		std::vector<std::string> textures_;
 		unsigned int point_buffer_object_;
 		unsigned int normal_buffer_object_;
 		unsigned int texture_buffer_object_;

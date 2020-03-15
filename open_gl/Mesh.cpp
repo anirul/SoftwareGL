@@ -1,11 +1,14 @@
 #include "Mesh.h"
 #include <iterator>
 #include <gl/glew.h>
+#include "../software_gl/Mesh.h"
 
 namespace OpenGL {
 
-	Mesh::Mesh(const SoftwareGL::Mesh& mesh)
+	Mesh::Mesh(const std::string& file, bool test /*= false*/)
 	{
+		SoftwareGL::Mesh mesh{};
+		mesh.LoadFromObj(file);
 		std::vector<float> flat_positions_ = {};
 		std::vector<float> flat_normals_ = {};
 		std::vector<float> flat_textures_ = {};
@@ -48,47 +51,49 @@ namespace OpenGL {
 			flat_textures_.push_back(texel.x);
 			flat_textures_.push_back(texel.y);
 		}
-		// Position buffer initialization.
-		glGenBuffers(1, &point_buffer_object_);
-		glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object_);
-		glBufferData(
-			GL_ARRAY_BUFFER,
-			flat_positions_.size() * sizeof(float),
-			flat_positions_.data(),
-			GL_STATIC_DRAW);
+		if (!test)
+		{
+			// Position buffer initialization.
+			glGenBuffers(1, &point_buffer_object_);
+			glBindBuffer(GL_ARRAY_BUFFER, point_buffer_object_);
+			glBufferData(
+				GL_ARRAY_BUFFER,
+				flat_positions_.size() * sizeof(float),
+				flat_positions_.data(),
+				GL_STATIC_DRAW);
 
-		// Normal buffer initialization.
-		glGenBuffers(1, &normal_buffer_object_);
-		glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_object_);
-		glBufferData(
-			GL_ARRAY_BUFFER,
-			flat_normals_.size() * sizeof(float),
-			flat_normals_.data(),
-			GL_STATIC_DRAW);
+			// Normal buffer initialization.
+			glGenBuffers(1, &normal_buffer_object_);
+			glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_object_);
+			glBufferData(
+				GL_ARRAY_BUFFER,
+				flat_normals_.size() * sizeof(float),
+				flat_normals_.data(),
+				GL_STATIC_DRAW);
 
-		// Texture coordinates buffer initialization.
-		glGenBuffers(1, &texture_buffer_object_);
-		glBindBuffer(GL_ARRAY_BUFFER, texture_buffer_object_);
-		glBufferData(
-			GL_ARRAY_BUFFER,
-			flat_textures_.size() * sizeof(float),
-			flat_textures_.data(),
-			GL_STATIC_DRAW);
+			// Texture coordinates buffer initialization.
+			glGenBuffers(1, &texture_buffer_object_);
+			glBindBuffer(GL_ARRAY_BUFFER, texture_buffer_object_);
+			glBufferData(
+				GL_ARRAY_BUFFER,
+				flat_textures_.size() * sizeof(float),
+				flat_textures_.data(),
+				GL_STATIC_DRAW);
 
-		// Index buffer array.
-		glGenBuffers(1, &index_buffer_object_);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
-		glBufferData(
-			GL_ELEMENT_ARRAY_BUFFER,
-			flat_indices_.size() * sizeof(unsigned int),
-			flat_indices_.data(),
-			GL_STATIC_DRAW);
-
+			// Index buffer array.
+			glGenBuffers(1, &index_buffer_object_);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_object_);
+			glBufferData(
+				GL_ELEMENT_ARRAY_BUFFER,
+				flat_indices_.size() * sizeof(unsigned int),
+				flat_indices_.data(),
+				GL_STATIC_DRAW);
+		}
 		// Get the size of the indices.
 		index_size_ = static_cast<GLsizei>(flat_indices_.size());
 	}
 
-	void Mesh::SetTexture(std::initializer_list<int> values)
+	void Mesh::SetTexture(std::initializer_list<std::string> values)
 	{
 		textures_.clear();
 		textures_.assign(values.begin(), values.end());

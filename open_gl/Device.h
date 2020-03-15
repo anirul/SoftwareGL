@@ -3,6 +3,7 @@
 #include <memory>
 #include <map>
 #include <array>
+#include <functional>
 #include <SDL2/SDL.h>
 #include "Program.h"
 #include "Texture.h"
@@ -25,7 +26,7 @@ namespace OpenGL {
 		// Draw what is on the scene.
 		void Draw();
 		// Scene management.
-		void SetScene(std::shared_ptr<SoftwareGL::Scene> scene);
+		void SetSceneTree(const SoftwareGL::SceneTree& scene_tree);
 		// Shader management.
 		void AddShader(const Shader& shader);
 		void LinkShader();
@@ -44,13 +45,16 @@ namespace OpenGL {
 		void SetCamera(const SoftwareGL::Camera& camera);
 		// Get the GL version.
 		std::pair<int, int> GetGLVersion() const;
+		// Set a function to allow error to be displayed.
+		void SetCallbackError(std::function<void(const std::string&)> func);
 
 	private:
 		std::shared_ptr<Program> program_;
 		std::vector<Shader> shaders_ = {};
-		std::shared_ptr<SoftwareGL::Scene> scene_;
+		SoftwareGL::SceneTree scene_tree_ = {};
 		std::map<std::string, std::shared_ptr<Texture>> name_texture_map_;
 		std::array<std::string, 32> name_array_;
+		std::function<void(const std::string&)> func_ = nullptr;
 		SDL_GLContext sdl_gl_context_ = nullptr;
 		int major_version_ = 0;
 		int minor_version_ = 0;

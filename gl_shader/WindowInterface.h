@@ -18,7 +18,7 @@ namespace SoftwareGL {
 		// Cleanup after the window has been closed.
 		virtual void Cleanup() = 0;
 		// Get size of the window.
-		virtual const std::pair<size_t, size_t> GetWindowSize() const = 0;
+		virtual const std::pair<int, int> GetWindowSize() const = 0;
 	};
 
 } // End of namespace SoftwareGL.

@@ -1,88 +1,39 @@
 #include "Scene.h"
+#include <stdexcept>
 
 namespace SoftwareGL {
 
-	void SceneMatrix::AddChild(std::shared_ptr<Scene> child)
+	void SceneMatrix::SetParent(const std::shared_ptr<Scene>& parent)
 	{
-		children_.push_back(child);
+		parent_ = parent;
 	}
 
 	const model_mesh SceneMatrix::GetLocalModelAndMesh() const
 	{
-		// CHECKME: multiplication is in right order?
-		return { parent_->GetLocalModelAndMesh().first * matrix_, nullptr };
-	}
-
-	std::shared_ptr<const Scene> SceneMatrix::Next(
-		std::shared_ptr<const Scene> self /*= nullptr*/) const
-	{
-		if (self == nullptr)
-		{
-			const std::shared_ptr<const SceneMatrix> ptr(this);
-			return parent_->Next(ptr);
-		}
-		auto it = std::find(children_.begin(), children_.end(), self);
-		if (it != children_.end())
-		{
-			++it;
-			if (it != children_.end())
-			{
-				return *it;
-			}
-		}
 		if (parent_)
 		{
-			std::shared_ptr<const SceneMatrix> ptr(this);
-			return parent_->Next(ptr);
+			// CHECKME: multiplication is in right order?
+			return { parent_->GetLocalModelAndMesh().first * matrix_, nullptr };
 		}
-		return nullptr;
+		else
+		{
+			return { matrix_, nullptr };
+		}
 	}
 
-	Scene::ConstIterator SceneMatrix::begin() const
+	void SceneMesh::SetParent(const std::shared_ptr<Scene>& parent)
 	{
-		std::shared_ptr<const SceneMatrix> ptr(this);
-		return Scene::ConstIterator(ptr);
+		parent_ = parent;
 	}
 
 	const model_mesh SceneMesh::GetLocalModelAndMesh() const
 	{
-		return { parent_->GetLocalModelAndMesh().first, mesh_ };
-	}
-
-	std::shared_ptr<const Scene> SceneMesh::Next(
-		std::shared_ptr<const Scene> self /*= nullptr*/) const
-	{
-		std::shared_ptr<const SceneMesh> ptr(this);
-		return parent_->Next(ptr);
-	}
-
-	SoftwareGL::Scene::ConstIterator SceneMesh::begin() const
-	{
-		std::shared_ptr<const SceneMesh> ptr(this);
-		return Scene::ConstIterator(ptr);
-	}
-
-	Scene::ConstIterator::ConstIterator(std::shared_ptr<const Scene> scene) :
-		scene_(scene) {}
-
-	const model_mesh Scene::ConstIterator::operator*() const
-	{
-		return scene_->GetLocalModelAndMesh();
-	}
-
-	Scene::ConstIterator Scene::ConstIterator::operator++()
-	{
-		auto next_scene = scene_->Next(scene_);
-		while (!next_scene->IsLeaf())
+		VectorMath::matrix ret = {};
+		if (parent_)
 		{
-			next_scene = next_scene->Next(scene_);
+			ret = parent_->GetLocalModelAndMesh().first;
 		}
-		return ConstIterator(next_scene);
-	}
-
-	bool Scene::ConstIterator::operator!=(const ConstIterator& it) const
-	{
-		return scene_ != it.scene_;
+		return { ret, mesh_ };
 	}
 
 	bool Scene::operator!=(std::shared_ptr<Scene> scene) const
@@ -90,9 +41,12 @@ namespace SoftwareGL {
 		return scene.get() != this;
 	}
 
-	SoftwareGL::Scene::ConstIterator Scene::end() const
+	void SceneTree::AddNode(
+		const std::shared_ptr<Scene>& node, 
+		const std::shared_ptr<Scene>& parent /*= nullptr*/)
 	{
-		return ConstIterator(nullptr);
+		node->SetParent(parent);
+		push_back(node);
 	}
 
 } // End namespace SoftwareGL.

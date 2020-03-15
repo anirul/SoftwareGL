@@ -32,7 +32,7 @@ bool WindowSoftwareGL::RunEvent(const SDL_Event& event)
 	return true;
 }
 
-const std::pair<size_t, size_t> WindowSoftwareGL::GetWindowSize() const
+const std::pair<int, int> WindowSoftwareGL::GetWindowSize() const
 {
 	return std::make_pair(width_, height_);
 }

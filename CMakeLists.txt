@@ -80,6 +80,7 @@ add_test(
 target_link_libraries(software_gl_test
   PUBLIC
     open_gl
+    software_gl
   PRIVATE
     GTest::gtest
 	GTest::gtest_main

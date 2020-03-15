@@ -37,6 +37,7 @@ namespace SoftwareGL {
 			const GLchar* message,
 			const void* userParam);
 #endif
+		void ErrorMessageDisplay(const std::string& error);
 
 	private:
 		std::shared_ptr<WindowInterface> window_interface_;
@@ -45,7 +46,7 @@ namespace SoftwareGL {
 		SDL_Window* sdl_window_ = nullptr;
 		SDL_GLContext sdl_gl_context_ = nullptr;
 #if defined(_WIN32) || defined(_WIN64)
-		HWND hwnd_;
+		HWND hwnd_ = nullptr;
 #endif
 	};
 

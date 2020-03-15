@@ -87,6 +87,16 @@ namespace SoftwareGL {
 		std::cerr << "OpenGL Error: " << oss.str() << std::endl;
 #endif
 	}
+
+	void WindowSDL2GL::ErrorMessageDisplay(const std::string& error)
+	{
+#if defined(_WIN32) || defined(_WIN64)
+		MessageBox(hwnd_, error.c_str(), "OpenGL Error", 0);
+#else
+		std::cerr << "OpenGL Error: " << error << std::endl;
+#endif
+	}
+
 #endif
 
 	WindowSDL2GL::WindowSDL2GL(
@@ -95,11 +105,7 @@ namespace SoftwareGL {
 	{
 		if (SDL_Init(SDL_INIT_VIDEO) != 0)
 		{
-#if defined(_WIN32) || defined(_WIN64)
-			MessageBox(nullptr, "Couldn't initialize SDL2.", "Software GL", 0);
-#else
-			std::cerr << "Couldn't initialize SDL2." << std::endl;
-#endif
+			ErrorMessageDisplay("Couldn't initialize SDL2.");
 			throw std::runtime_error("Couldn't initialize SDL2.");
 		}
 		const auto p_size = window_interface_->GetWindowSize();
@@ -112,15 +118,7 @@ namespace SoftwareGL {
 			SDL_WINDOW_OPENGL);
 		if (!sdl_window_)
 		{
-#if defined(_WIN32) || defined(_WIN64)
-			MessageBox(
-				nullptr,
-				"Couldn't start a window in SDL2.",
-				"Software GL",
-				0);
-#else
-			std::cerr << "Couldn't start a window in SDL2." << std::endl;
-#endif
+			ErrorMessageDisplay("Couldn't start a window in SDL2.");
 			throw std::runtime_error("Couldn't start a window in SDL2.");
 		}
 #if defined(_WIN32) || defined(_WIN64)
@@ -131,6 +129,10 @@ namespace SoftwareGL {
 #endif
 		// Create a new device.
 		device_ = std::make_shared<OpenGL::Device>(sdl_window_);
+		device_->SetCallbackError([this](const std::string& error)
+		{
+			ErrorMessageDisplay(error);
+		});
 	}
 
 	WindowSDL2GL::~WindowSDL2GL()
@@ -158,17 +160,25 @@ namespace SoftwareGL {
 			std::string error = "Error version is too low (" +
 				std::to_string(p.first) + ", " +
 				std::to_string(p.second) + ")";
-#if defined(_WIN32) || defined(_WIN64)
-			MessageBox(hwnd_, error.c_str(), "Fragment shader Error", 0);
-#else
-			std::cout << "Fragment shader Error: " << error << std::endl;
-#endif
+			ErrorMessageDisplay(error);
 			return false;
 		}
 
+		// Device Startup call.
+		device_->Startup(window_interface_->GetWindowSize());
+
 		// Mesh creation.
-		SoftwareGL::Mesh mesh{};
-		mesh.LoadFromObj("../asset/TorusUVNormal.obj");
+		device_->AddTexture(
+			"texture1",
+			std::make_shared<OpenGL::Texture>("../asset/Texture.tga"));
+		auto gl_mesh = 
+			std::make_shared<OpenGL::Mesh>("../asset/TorusUVNormal.obj");
+		gl_mesh->SetTexture({ "texture1" });
+
+		// Pack it into a Scene object.
+		SceneTree scene_tree{};
+		scene_tree.AddNode(std::make_shared<SoftwareGL::SceneMesh>(gl_mesh));
+		device_->SetSceneTree(scene_tree);
 
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
