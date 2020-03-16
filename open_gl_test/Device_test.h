@@ -8,7 +8,7 @@ namespace test {
 	class DeviceTest : public testing::Test 
 	{
 	public:
-		DeviceTest() {}
+		DeviceTest() = default;
 
 	protected:
 		std::shared_ptr<OpenGL::Device> device_ = nullptr;

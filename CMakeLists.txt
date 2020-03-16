@@ -10,8 +10,6 @@ project(SoftwareGL)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
-
-enable_testing()
 find_package(Gtest CONFIG REQUIRED)
 
 add_library(software_gl
@@ -70,13 +68,6 @@ add_executable(software_gl_test
     ${PROJECT_SOURCE_DIR}/software_gl_test/Scene_test.cpp
 )
 
-add_test(
-  NAME
-    software_gl_test
-  COMMAND
-    software_gl_test
-)
-
 target_link_libraries(software_gl_test
   PUBLIC
     open_gl
@@ -84,8 +75,6 @@ target_link_libraries(software_gl_test
   PRIVATE
     GTest::gtest
 	GTest::gtest_main
-	GTest::gmock
-	GTest::gmock_main
     SDL2::SDL2
     GLEW::GLEW
 )
@@ -102,6 +91,10 @@ add_library(open_gl
     ${PROJECT_SOURCE_DIR}/open_gl/Device.cpp
     ${PROJECT_SOURCE_DIR}/open_gl/Mesh.h
     ${PROJECT_SOURCE_DIR}/open_gl/Mesh.cpp
+    ${PROJECT_SOURCE_DIR}/open_gl/Buffer.h
+    ${PROJECT_SOURCE_DIR}/open_gl/Buffer.cpp
+    ${PROJECT_SOURCE_DIR}/asset/vertex.glsl
+	${PROJECT_SOURCE_DIR}/asset/fragment.glsl
 )
 
 if (NOT APPLE)
@@ -133,23 +126,17 @@ add_executable(open_gl_test
     ${PROJECT_SOURCE_DIR}/open_gl_test/Device_test.cpp
     ${PROJECT_SOURCE_DIR}/open_gl_test/Mesh_test.h
     ${PROJECT_SOURCE_DIR}/open_gl_test/Mesh_test.cpp
-)
-
-add_test(
-  NAME
-    open_gl_test
-  COMMAND
-    open_gl_test
+    ${PROJECT_SOURCE_DIR}/open_gl_test/Buffer_test.h
+    ${PROJECT_SOURCE_DIR}/open_gl_test/Buffer_test.cpp
 )
 
 target_link_libraries(open_gl_test
   PUBLIC
     open_gl
+    software_gl
   PRIVATE
     GTest::gtest
 	GTest::gtest_main
-	GTest::gmock
-	GTest::gmock_main
     SDL2::SDL2
     GLEW::GLEW
 )
@@ -218,8 +205,6 @@ add_executable(gl_shader
     ${PROJECT_SOURCE_DIR}/gl_shader/WindowSoftwareGL.cpp
     ${PROJECT_SOURCE_DIR}/gl_shader/WindowSDL2GL.cpp
     ${PROJECT_SOURCE_DIR}/gl_shader/WindowSDL2GL.h
-	${PROJECT_SOURCE_DIR}/asset/vertex.glsl
-	${PROJECT_SOURCE_DIR}/asset/fragment.glsl
 )
 
 if (NOT APPLE)
