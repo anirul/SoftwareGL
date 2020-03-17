@@ -100,9 +100,6 @@ namespace OpenGL {
 		VectorMath::matrix model = {};
 		program_->UniformMatrix("model", model);
 
-		// Vertex attribute initialization.
-		glGenVertexArrays(1, &vertex_attribute_object_);
-
 		return true;
 	}
 
@@ -120,45 +117,8 @@ namespace OpenGL {
 				continue;
 			}
 
-			// Set uniform matrix.
-			program_->UniformMatrix("model", value.first);
-			
-			// Bind the vertex array.
-			glBindVertexArray(vertex_attribute_object_);
-			value.second->PointBuffer().Bind();
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-			value.second->PointBuffer().UnBind();
-			value.second->NormalBuffer().Bind();
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-			value.second->NormalBuffer().UnBind();
-			value.second->TextureBuffer().Bind();
-			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-			value.second->TextureBuffer().UnBind();
-
-			// Enable vertex attrib array.
-			glEnableVertexAttribArray(0);
-			glEnableVertexAttribArray(1);
-			glEnableVertexAttribArray(2);
-
-			// Bind textures.
-			for (const std::string& texture : value.second->GetTextures())
-			{
-				EnableTexture(texture);
-			}
-
-			value.second->IndexBuffer().Bind();
-			glDrawElements(
-				GL_TRIANGLES,
-				static_cast<GLsizei>(value.second->IndexSize()),
-				GL_UNSIGNED_INT,
-				nullptr);
-			value.second->IndexBuffer().UnBind();
-
-			// Unbind no more used textures.
-			for (const std::string& texture : value.second->GetTextures())
-			{
-				DisableTexture(texture);
-			}
+			// Draw the mesh.
+			value.second->Draw(*program_, texture_manager_, value.first);
 		}
 	}
 
@@ -167,77 +127,10 @@ namespace OpenGL {
 		scene_tree_ = scene_tree;
 	}
 
-	void Device::AddShader(const Shader& shader)
+	void Device::SetTextureManager(
+		const OpenGL::TextureManager& texture_manager)
 	{
-		program_->AddShader(shader);
-	}
-
-	void Device::LinkShader()
-	{
-		program_->LinkShader();
-	}
-
-	bool Device::AddTexture(
-		const std::string& name, 
-		std::shared_ptr<Texture> texture)
-	{
-		auto ret = name_texture_map_.insert({ name, texture });
-		return ret.second;
-	}
-
-	bool Device::RemoveTexture(const std::string& name)
-	{
-		auto it = name_texture_map_.find(name);
-		if (it == name_texture_map_.end())
-		{
-			return false;
-		}
-		name_texture_map_.erase(it);
-		return true;
-	}
-
-	void Device::EnableTexture(const std::string& name)
-	{
-		auto it1 = name_texture_map_.find(name);
-		if (it1 == name_texture_map_.end())
-		{
-			throw std::runtime_error("try to enable a texture: " + name);
-		}
-		for (int i = 0; i < name_array_.size(); ++i)
-		{
-			if (name_array_[i].empty())
-			{
-				name_array_[i] = name;
-				it1->second->Bind(i);
-				return;
-			}
-		}
-		throw std::runtime_error("No free slots!");
-	}
-
-	void Device::DisableTexture(const std::string& name)
-	{
-		auto it1 = name_texture_map_.find(name);
-		if (it1 == name_texture_map_.end())
-		{
-			throw std::runtime_error("no texture named: " + name);
-		}
-		auto it2 = std::find_if(
-			name_array_.begin(),
-			name_array_.end(),
-			[name](const std::string& value)
-		{
-			return value == name;
-		});
-		if (it2 != name_array_.end())
-		{
-			*it2 = "";
-			it1->second->UnBind();
-		}
-		else
-		{
-			throw std::runtime_error("No slot bind to: " + name);
-		}
+		texture_manager_ = texture_manager;
 	}
 
 	void Device::SetCamera(const SoftwareGL::Camera& camera)

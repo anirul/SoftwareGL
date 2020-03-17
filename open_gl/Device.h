@@ -28,16 +28,8 @@ namespace OpenGL {
 		void Draw();
 		// Scene management.
 		void SetSceneTree(const SoftwareGL::SceneTree& scene_tree);
-		// Shader management.
-		void AddShader(const Shader& shader);
-		void LinkShader();
-		// Texture management.
-		bool AddTexture(
-			const std::string& name, 
-			std::shared_ptr<Texture> texture);
-		bool RemoveTexture(const std::string& name);
-		void EnableTexture(const std::string& name);
-		void DisableTexture(const std::string& name);
+		// Set texture manager.
+		void SetTextureManager(const OpenGL::TextureManager& texture_manager);
 		// Set the camera.
 		void SetCamera(const SoftwareGL::Camera& camera);
 		// Get the GL version.
@@ -50,8 +42,7 @@ namespace OpenGL {
 		std::vector<Shader> shaders_ = {};
 		SoftwareGL::SceneTree scene_tree_ = {};
 		std::shared_ptr<OpenGL::Buffer> model_buffer_ = nullptr;
-		std::map<std::string, std::shared_ptr<Texture>> name_texture_map_;
-		std::array<std::string, 32> name_array_;
+		OpenGL::TextureManager texture_manager_ = {};
 		std::function<void(const std::string&)> func_ = nullptr;
 		SDL_GLContext sdl_gl_context_ = nullptr;
 		int major_version_ = 0;

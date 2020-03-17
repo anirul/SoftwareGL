@@ -73,6 +73,30 @@ namespace OpenGL {
 
 		// Get the size of the indices.
 		index_size_ = static_cast<GLsizei>(flat_indices_.size());
+
+		// Create a new vertex array (to render the mesh).
+		glGenVertexArrays(1, &vertex_array_object_);
+		glBindVertexArray(vertex_array_object_);
+		point_buffer_.Bind();
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+		point_buffer_.UnBind();
+		normal_buffer_.Bind();
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+		normal_buffer_.UnBind();
+		texture_buffer_.Bind();
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+		texture_buffer_.UnBind();
+
+		// Enable vertex attrib array.
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glBindVertexArray(0);
+	}
+
+	Mesh::~Mesh()
+	{
+		glDeleteVertexArrays(1, &vertex_array_object_);
 	}
 
 	const OpenGL::Buffer& Mesh::PointBuffer() const
@@ -99,6 +123,34 @@ namespace OpenGL {
 	{
 		textures_.clear();
 		textures_.assign(values.begin(), values.end());
+	}
+
+	void Mesh::Draw(
+		const OpenGL::Program& program,
+		const OpenGL::TextureManager& texture_manager,
+		const VectorMath::matrix& model /*= {}*/) const
+	{
+		texture_manager.DisableAll();
+		for (const auto& str : textures_)
+		{
+			texture_manager.EnableTexture(str);
+		}
+
+		glBindVertexArray(vertex_array_object_);
+
+		program.UniformMatrix("model", model);
+
+		index_buffer_.Bind();
+		glDrawElements(
+			GL_TRIANGLES,
+			static_cast<GLsizei>(index_size_),
+			GL_UNSIGNED_INT,
+			nullptr);
+		index_buffer_.UnBind();
+
+		glBindVertexArray(0);
+
+		texture_manager.DisableAll();
 	}
 
 } // End namespace OpenGL

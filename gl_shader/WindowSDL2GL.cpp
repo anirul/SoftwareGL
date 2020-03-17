@@ -96,7 +96,6 @@ namespace SoftwareGL {
 		std::cerr << "OpenGL Error: " << error << std::endl;
 #endif
 	}
-
 #endif
 
 	WindowSDL2GL::WindowSDL2GL(
@@ -168,12 +167,16 @@ namespace SoftwareGL {
 		device_->Startup(window_interface_->GetWindowSize());
 
 		// Mesh creation.
-		device_->AddTexture(
+		auto gl_mesh =
+			std::make_shared<OpenGL::Mesh>("../asset/TorusUVNormal.obj");
+
+		// Create the texture and bind it to the mesh.
+		OpenGL::TextureManager texture_manager{};
+		texture_manager.AddTexture(
 			"texture1",
 			std::make_shared<OpenGL::Texture>("../asset/Texture.tga"));
-		auto gl_mesh = 
-			std::make_shared<OpenGL::Mesh>("../asset/TorusUVNormal.obj");
 		gl_mesh->SetTexture({ "texture1" });
+		device_->SetTextureManager(texture_manager);
 
 		// Pack it into a Scene object.
 		SceneTree scene_tree{};
