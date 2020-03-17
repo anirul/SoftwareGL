@@ -70,7 +70,7 @@ namespace OpenGL {
 			if (func_)
 			{
 				func_(
-					"Fragment shader Error: " + 
+					"Fragment shader Error: " +
 					fragment_shader.GetErrorMessage());
 			}
 			return false;
@@ -101,9 +101,7 @@ namespace OpenGL {
 		program_->UniformMatrix("model", model);
 
 		// Vertex attribute initialization.
-		GLuint vertex_attribute_object = 0;
-		glGenVertexArrays(1, &vertex_attribute_object);
-		glBindVertexArray(vertex_attribute_object);
+		glGenVertexArrays(1, &vertex_attribute_object_);
 
 		return true;
 	}
@@ -125,12 +123,17 @@ namespace OpenGL {
 			// Set uniform matrix.
 			program_->UniformMatrix("model", value.first);
 			
-			glBindBuffer(GL_ARRAY_BUFFER, value.second->PointObject());
+			// Bind the vertex array.
+			glBindVertexArray(vertex_attribute_object_);
+			value.second->PointBuffer().Bind();
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-			glBindBuffer(GL_ARRAY_BUFFER, value.second->NormalObject());
+			value.second->PointBuffer().UnBind();
+			value.second->NormalBuffer().Bind();
 			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-			glBindBuffer(GL_ARRAY_BUFFER, value.second->TextureObject());
+			value.second->NormalBuffer().UnBind();
+			value.second->TextureBuffer().Bind();
 			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+			value.second->TextureBuffer().UnBind();
 
 			// Enable vertex attrib array.
 			glEnableVertexAttribArray(0);
@@ -143,12 +146,13 @@ namespace OpenGL {
 				EnableTexture(texture);
 			}
 
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, value.second->IndexObject());
+			value.second->IndexBuffer().Bind();
 			glDrawElements(
 				GL_TRIANGLES,
 				static_cast<GLsizei>(value.second->IndexSize()),
 				GL_UNSIGNED_INT,
 				nullptr);
+			value.second->IndexBuffer().UnBind();
 
 			// Unbind no more used textures.
 			for (const std::string& texture : value.second->GetTextures())
@@ -234,21 +238,6 @@ namespace OpenGL {
 		{
 			throw std::runtime_error("No slot bind to: " + name);
 		}
-	}
-
-	void Device::SetProjection(const VectorMath::matrix& projection)
-	{
-		program_->UniformMatrix("projection", projection);
-	}
-
-	void Device::SetView(const VectorMath::matrix& view)
-	{
-		program_->UniformMatrix("view", view);
-	}
-
-	void Device::SetModel(const VectorMath::matrix& model)
-	{
-		program_->UniformMatrix("model", model);
 	}
 
 	void Device::SetCamera(const SoftwareGL::Camera& camera)

@@ -1,10 +1,15 @@
 #include "Program.h"
+#include <stdexcept>
 
 namespace OpenGL {
 
 	Program::Program()
 	{
 		program_id_ = glCreateProgram();
+		if (program_id_ <= 0)
+		{
+			throw std::runtime_error("Could not have a program that is <= 0");
+		}
 	}
 
 	Program::~Program()

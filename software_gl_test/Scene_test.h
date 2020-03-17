@@ -28,8 +28,7 @@ namespace test {
 			scene_tree_->AddNode(matrix_scene);
 			{
 				auto mesh = std::make_shared<OpenGL::Mesh>(
-					"../asset/CubeUVNormal.obj",
-					true);
+					"../asset/CubeUVNormal.obj");
 				scene_tree_->AddNode(
 					std::make_shared<SoftwareGL::SceneMesh>(mesh),
 					matrix_scene);
@@ -47,8 +46,7 @@ namespace test {
 				scene_tree_->AddNode(disp_scene, matrix_scene);
 				{
 					auto mesh = std::make_shared<OpenGL::Mesh>(
-						"../asset/TorusUVNormal.obj",
-						true);
+						"../asset/TorusUVNormal.obj");
 					scene_tree_->AddNode(
 						std::make_shared<SoftwareGL::SceneMesh>(mesh),
 						disp_scene);

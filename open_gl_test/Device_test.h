@@ -1,14 +1,15 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include "OpenGL_test.h"
 #include "../open_gl/Device.h"
 
 namespace test {
 
-	class DeviceTest : public testing::Test 
+	class DeviceTest : public OpenGLTest
 	{
 	public:
-		DeviceTest() = default;
+		DeviceTest() : OpenGLTest() {}
 
 	protected:
 		std::shared_ptr<OpenGL::Device> device_ = nullptr;

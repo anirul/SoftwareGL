@@ -2,30 +2,34 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 #include <initializer_list>
+#include "../open_gl/Buffer.h"
 
 namespace OpenGL {
 
 	class Mesh
 	{
 	public:
-		Mesh(const std::string& file, bool test = false);
+		Mesh(const std::string& file);
+		virtual ~Mesh() = default;
 
 	public:
-		unsigned int PointObject() const { return point_buffer_object_; }
-		unsigned int NormalObject() const { return normal_buffer_object_; }
-		unsigned int TextureObject() const { return texture_buffer_object_; }
-		unsigned int IndexObject() const { return index_buffer_object_; }
-		size_t IndexSize() const { return index_size_; }
+		const OpenGL::Buffer& PointBuffer() const;
+		const OpenGL::Buffer& NormalBuffer() const;
+		const OpenGL::Buffer& TextureBuffer() const;
+		const OpenGL::Buffer& IndexBuffer() const;
+		const size_t IndexSize() const { return index_size_; }
 		const std::vector<std::string> GetTextures() const { return textures_; }
 		void SetTexture(std::initializer_list<std::string> values);
 
 	private:
-		std::vector<std::string> textures_;
-		unsigned int point_buffer_object_;
-		unsigned int normal_buffer_object_;
-		unsigned int texture_buffer_object_;
-		unsigned int index_buffer_object_;
+		std::vector<std::string> textures_ = {};
+		OpenGL::Buffer point_buffer_ = {};
+		OpenGL::Buffer normal_buffer_ = {};
+		OpenGL::Buffer texture_buffer_ = {};
+		OpenGL::Buffer index_buffer_ = 
+			{ OpenGL::BufferType::ELEMENT_ARRAY_BUFFER };
 		size_t index_size_ = 0;
 	};
 

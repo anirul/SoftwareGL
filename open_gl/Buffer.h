@@ -41,11 +41,12 @@ namespace OpenGL {
 		Buffer(
 			const BufferType buffer_type = BufferType::ARRAY_BUFFER, 
 			const BufferUsage buffer_usage = BufferUsage::STATIC_DRAW);
-		void Copy(const size_t size, const void* data = nullptr) const;
+		virtual ~Buffer();
+		void BindCopy(const size_t size, const void* data = nullptr) const;
 		void Bind() const;
 		void UnBind() const;
-		void* Map(const size_t size);
-		void UnMap() const;
+		void* BindMap(const size_t size) const;
+		void UnBindUnMap() const;
 		const unsigned int GetId() const { return buffer_object_; }
 
 	private:

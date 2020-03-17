@@ -13,8 +13,13 @@ namespace OpenGL {
 	{
 		glGenBuffers(1, &buffer_object_);
 	}
+	
+	Buffer::~Buffer()
+	{
+		glDeleteBuffers(1, &buffer_object_);
+	}
 
-	void Buffer::Copy(const size_t size, const void* data /*= nullptr*/) const
+	void Buffer::BindCopy(const size_t size, const void* data /*= nullptr*/) const
 	{
 		Bind();
 		glBufferData(
@@ -35,8 +40,9 @@ namespace OpenGL {
 		glBindBuffer(static_cast<GLenum>(buffer_type_), 0);
 	}
 
-	void* Buffer::Map(const size_t size)
+	void* Buffer::BindMap(const size_t size) const
 	{
+		Bind();
 		if (buffer_usage_ == BufferUsage::STATIC_DRAW)
 		{
 			throw std::runtime_error("Static draw object cannot be mapped!");
@@ -48,13 +54,14 @@ namespace OpenGL {
 			GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
 	}
 
-	void Buffer::UnMap() const
+	void Buffer::UnBindUnMap() const
 	{
 		if (buffer_usage_ == BufferUsage::STATIC_DRAW)
 		{
 			throw std::runtime_error("Static draw object cannot be unmapped!");
 		}
 		glUnmapBuffer(static_cast<GLenum>(buffer_type_));
+		UnBind();
 	}
 
 } // End namespace OpenGL.

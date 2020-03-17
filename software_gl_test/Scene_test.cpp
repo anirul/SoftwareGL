@@ -14,8 +14,7 @@ namespace test {
 	{
 		EXPECT_FALSE(scene_);
 		auto mesh = std::make_shared<OpenGL::Mesh>(
-			"../asset/CubeUVNormal.obj", 
-			true);
+			"../asset/CubeUVNormal.obj");
 		scene_ = std::make_shared<SoftwareGL::SceneMesh>(mesh);
 		EXPECT_TRUE(scene_);
 	}

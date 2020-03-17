@@ -2,6 +2,7 @@
 
 #include <optional>
 #include "../open_gl/Shader.h"
+#include "../open_gl/Buffer.h"
 #include "../software_gl/VectorMath.h"
 
 namespace OpenGL {
@@ -43,9 +44,7 @@ namespace OpenGL {
 			const bool flip = false) const;
 
 	private:
-		unsigned int program_id_ = 0;
-		unsigned int vertex_id_ = 0;
-		unsigned int fragment_id_ = 0;
+		int program_id_ = 0;
 	};
 
 } // End namespace OpenGL.

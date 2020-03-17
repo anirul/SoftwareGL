@@ -116,6 +116,7 @@ endif()
 
 add_executable(open_gl_test
     ${PROJECT_SOURCE_DIR}/open_gl_test/main.cpp
+    ${PROJECT_SOURCE_DIR}/open_gl_test/OpenGL_test.h
     ${PROJECT_SOURCE_DIR}/open_gl_test/Shader_test.h
     ${PROJECT_SOURCE_DIR}/open_gl_test/Shader_test.cpp
     ${PROJECT_SOURCE_DIR}/open_gl_test/Program_test.h
