@@ -4,6 +4,7 @@
 #include <map>
 #include <array>
 #include <functional>
+#include <optional>
 #include <SDL2/SDL.h>
 #include "Program.h"
 #include "Texture.h"
@@ -23,7 +24,9 @@ namespace OpenGL {
 
 	public:
 		// Startup the scene.
-		bool Startup(std::pair<int, int> size);
+		// Return an error string with the current error none if there is no
+		// errors.
+		std::optional<std::string> Startup(std::pair<int, int> size);
 		// Draw what is on the scene.
 		void Draw();
 		// Scene management.
@@ -32,10 +35,10 @@ namespace OpenGL {
 		void SetTextureManager(const OpenGL::TextureManager& texture_manager);
 		// Set the camera.
 		void SetCamera(const SoftwareGL::Camera& camera);
+
+	public:
 		// Get the GL version.
 		std::pair<int, int> GetGLVersion() const;
-		// Set a function to allow error to be displayed.
-		void SetCallbackError(std::function<void(const std::string&)> func);
 
 	private:
 		std::shared_ptr<Program> program_;
@@ -43,7 +46,6 @@ namespace OpenGL {
 		SoftwareGL::SceneTree scene_tree_ = {};
 		std::shared_ptr<OpenGL::Buffer> model_buffer_ = nullptr;
 		OpenGL::TextureManager texture_manager_ = {};
-		std::function<void(const std::string&)> func_ = nullptr;
 		SDL_GLContext sdl_gl_context_ = nullptr;
 		int major_version_ = 0;
 		int minor_version_ = 0;

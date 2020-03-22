@@ -19,7 +19,7 @@
 #include <sdl2/SDL.h>
 #include <GL/glew.h>
 #if defined(_WIN32) || defined(_WIN64)
-	#include <sdl2/SDL_syswm.h>
+	#include <SDL2/SDL_syswm.h>
 #endif
 #include "../open_gl/Shader.h"
 #include "../open_gl/Device.h"
@@ -128,10 +128,6 @@ namespace SoftwareGL {
 #endif
 		// Create a new device.
 		device_ = std::make_shared<OpenGL::Device>(sdl_window_);
-		device_->SetCallbackError([this](const std::string& error)
-		{
-			ErrorMessageDisplay(error);
-		});
 	}
 
 	WindowSDL2GL::~WindowSDL2GL()
@@ -164,7 +160,11 @@ namespace SoftwareGL {
 		}
 
 		// Device Startup call.
-		device_->Startup(window_interface_->GetWindowSize());
+		auto maybe_error = device_->Startup(window_interface_->GetWindowSize());
+		if (maybe_error)
+		{
+			ErrorMessageDisplay(maybe_error.value());
+		}
 
 		// Mesh creation.
 		auto gl_mesh =

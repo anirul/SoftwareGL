@@ -48,32 +48,21 @@ namespace OpenGL {
 
 	Device::~Device() {}
 
-	bool Device::Startup(std::pair<int, int> size)
+	std::optional<std::string> Device::Startup(std::pair<int, int> size)
 	{
 		// Vertex Shader program.
 		OpenGL::Shader vertex_shader(GL_VERTEX_SHADER);
 		if (!vertex_shader.LoadFromFile("../asset/vertex.glsl"))
 		{
-			if (func_)
-			{
-				func_(
-					"Fragment shader Error: " +
-					vertex_shader.GetErrorMessage());
-			}
-			return false;
+			return "Fragment shader Error: " + vertex_shader.GetErrorMessage();
 		}
 
 		// Fragment Shader program.
 		OpenGL::Shader fragment_shader(GL_FRAGMENT_SHADER);
 		if (!fragment_shader.LoadFromFile("../asset/fragment.glsl"))
 		{
-			if (func_)
-			{
-				func_(
-					"Fragment shader Error: " +
-					fragment_shader.GetErrorMessage());
-			}
-			return false;
+			return "Fragment shader Error: " + 
+				fragment_shader.GetErrorMessage();
 		}
 
 		// Create the program.
@@ -100,7 +89,7 @@ namespace OpenGL {
 		VectorMath::matrix model = {};
 		program_->UniformMatrix("model", model);
 
-		return true;
+		return std::nullopt;
 	}
 
 	void Device::Draw()
@@ -141,12 +130,6 @@ namespace OpenGL {
 	std::pair<int, int> Device::GetGLVersion() const
 	{
 		return std::make_pair(major_version_, minor_version_);
-	}
-
-	void Device::SetCallbackError(
-		std::function<void(const std::string&)> func)
-	{
-		func_ = func;
 	}
 
 } // End namespace OpenGL.

@@ -14,7 +14,8 @@ namespace test {
 		EXPECT_FALSE(device_);
 		device_ = std::make_shared<OpenGL::Device>(sdl_window_);
 		PostGlewInit();
-		device_->Startup(std::make_pair<int, int>(640, 480));
+		auto maybe_error = device_->Startup(std::make_pair<int, int>(640, 480));
+		EXPECT_FALSE(maybe_error);
 		EXPECT_TRUE(device_);
 	}
 
